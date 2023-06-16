@@ -1,5 +1,5 @@
 {
-  "name": "timekipr",
+  "name": "timekipr-common",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,22 +10,33 @@
     "fmt": "prettier --write .",
     "preview": "vite preview"
   },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/timekipr-common.umd.cjs",
+  "module": "./dist/timekipr-common.js",
+  "exports": {
+    ".": {
+      "import": "./dist/timekipr-common.js",
+      "require": "./dist/timekipr-common.umd.cjs"
+    }
+  },
   "dependencies": {
     "lz-string": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-feather": "^2.0.10"
+    "react-feather": "^2.0.10",
+    "style-inject": "^0.3.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.37",
     "@types/react-dom": "^18.0.11",
+    "@types/style-inject": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "@vitejs/plugin-react-swc": "^3.0.0",
     "eslint": "^8.38.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.3.4",
+    "eslint-config-custom": "*",
     "prettier": "^2.8.8",
     "sass": "^1.63.4",
     "typescript": "^5.0.2",

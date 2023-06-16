@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Clipboard, Upload } from "react-feather";
 
 export interface Props {
-  hash: string,
-  onHashLoad: (value: string) => void
+  hash: string;
+  onHashLoad: (value: string) => void;
 }
 
 export const HashSetter = ({ hash, onHashLoad }: Props) => {
-  const [ localHash, setLocalHash ] = useState(hash);
+  const [localHash, setLocalHash] = useState(hash);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -26,9 +26,20 @@ export const HashSetter = ({ hash, onHashLoad }: Props) => {
           Share
         </button>
       </div>
-      <input className="hash-setter__input" type="text" value={localHash} onChange={(e) => setLocalHash(e.target.value)} />
-      <button onClick={() => navigator.clipboard.writeText(localHash)}><Clipboard />Copy</button>
-      <button onClick={() => onHashLoad(localHash)}><Upload />Load</button>
+      <input
+        className="hash-setter__input"
+        type="text"
+        value={localHash}
+        onChange={(e) => setLocalHash(e.target.value)}
+      />
+      <button onClick={() => navigator.clipboard.writeText(localHash)}>
+        <Clipboard />
+        Copy
+      </button>
+      <button onClick={() => onHashLoad(localHash)}>
+        <Upload />
+        Load
+      </button>
     </div>
-  )
-}
+  );
+};

@@ -52,7 +52,10 @@ export const TimelineBuilder = ({ definitions, setDefinitions }: Props) => {
             definition={d}
             onChange={(def) => updateDefinition(idx, def)}
           />
-          <button onClick={() => removeDefinition(idx)}><Trash />Remove</button>
+          <button onClick={() => removeDefinition(idx)}>
+            <Trash />
+            Remove
+          </button>
         </div>
       ))}
       <button
@@ -63,7 +66,8 @@ export const TimelineBuilder = ({ definitions, setDefinitions }: Props) => {
           ])
         }
       >
-        <Plus />Add
+        <Plus />
+        Add
       </button>
     </div>
   );
