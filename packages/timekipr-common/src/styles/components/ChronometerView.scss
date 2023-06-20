@@ -26,6 +26,14 @@
     &__time {
       font-weight: bold;
       font-size: 300%;
+
+      &--positive {
+        color: rgb(226, 66, 66);
+      }
+
+      &--negative {
+        color: rgb(94, 219, 94);
+      }
     }
 
     &__check {

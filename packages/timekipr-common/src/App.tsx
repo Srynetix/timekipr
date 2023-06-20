@@ -7,9 +7,8 @@ import {
 } from "./domain/ChronometerFlowDefinition";
 import { Timeline } from "./components/Timeline";
 
-import logo from "./assets/icon.png";
 import { HashSetter } from "./components/HashSetter";
-import clsx from "clsx";
+import { AppHeader } from "./components/AppHeader";
 
 function App() {
   const initialDefinitions = loadHash(window.location.hash.slice(1));
@@ -40,14 +39,7 @@ function App() {
 
   return (
     <div className="app">
-      <div
-        className={clsx("app__header", { "app__header--animated": playing })}
-      >
-        <div className="app__header__logo">
-          <img src={logo} alt="logo" />
-        </div>
-        <div className="app__header__title">timekipr</div>
-      </div>
+      <AppHeader animated={playing} />
       {!chronometerView && (
         <>
           <TimelineBuilder
