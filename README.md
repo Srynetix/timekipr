@@ -3,8 +3,8 @@
 A simple time-keeper app for meetings.  
 Uses Turborepo.
 
+**:rocket: [Play with it here!](https://srynetix.github.io/timekipr/)**
+
 ## TODO
 
-- Add an action to skip chronometer with a bonus/malus management
-- Add a global counter to know bonus/malus
 - Add documentation
