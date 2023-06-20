@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, Clipboard, Upload } from "react-feather";
+import { Clipboard, Share2, Upload } from "react-feather";
+import { Button } from "./Button";
+import { CollapsibleTitle } from "./CollapsibleTitle";
+import { InlineHelp } from "./InlineHelp";
 
 export interface Props {
   hash: string;
   onHashLoad: (value: string) => void;
+  readonly: boolean;
 }
 
-export const HashSetter = ({ hash, onHashLoad }: Props) => {
+export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
   const [localHash, setLocalHash] = useState(hash);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     setLocalHash(hash);
@@ -16,30 +20,61 @@ export const HashSetter = ({ hash, onHashLoad }: Props) => {
 
   return (
     <div className={`hash-setter ${collapsed ? "hash-setter--collapsed" : ""}`}>
-      <div className="hash-setter__title">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="hash-setter__collapseIcon"
-          title={collapsed ? "Show share section" : "Hide share section"}
-        >
-          {!collapsed ? <ChevronDown /> : <ChevronUp />}
-          Share
-        </button>
-      </div>
+      <CollapsibleTitle
+        leftIcon={<Share2 />}
+        collapsed={collapsed}
+        collapsedTitle="Show share section"
+        visibleTitle="Hide share section"
+        name="Share"
+        onClick={() => setCollapsed(!collapsed)}
+      />
+      <InlineHelp>
+        <p>
+          The hash below represents a specific timeline build. It is
+          automatically updated at each timeline build change. You can also
+          specify a value manually.
+        </p>
+        <p>
+          Use the{" "}
+          <Button primary inline>
+            <Clipboard />
+            Copy
+          </Button>{" "}
+          button to copy the hash to your clipboard.
+        </p>
+        <p>
+          Use the{" "}
+          <Button primary inline>
+            <Upload />
+            Load
+          </Button>{" "}
+          button to load the hash stored in the input box.
+        </p>
+      </InlineHelp>
       <input
         className="hash-setter__input"
+        disabled={readonly}
         type="text"
         value={localHash}
         onChange={(e) => setLocalHash(e.target.value)}
       />
-      <button onClick={() => navigator.clipboard.writeText(localHash)}>
-        <Clipboard />
-        Copy
-      </button>
-      <button onClick={() => onHashLoad(localHash)}>
-        <Upload />
-        Load
-      </button>
+      <div className="hash-setter__buttons">
+        <Button
+          primary
+          onClick={() => navigator.clipboard.writeText(localHash)}
+        >
+          <Clipboard />
+          Copy
+        </Button>
+        <Button
+          primary
+          disabled={readonly}
+          onClick={() => onHashLoad(localHash)}
+        >
+          <Upload />
+          Load
+        </Button>
+      </div>
     </div>
   );
 };

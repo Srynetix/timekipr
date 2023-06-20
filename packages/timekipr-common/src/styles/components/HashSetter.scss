@@ -1,0 +1,33 @@
+.hash-setter {
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 8px;
+  background-color: rgb(50, 50, 50);
+  padding: 0.5rem;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  &__title {
+    width: 100%;
+  }
+
+  &__input {
+    width: 100%;
+    height: 1.5rem;
+  }
+
+  &__buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &--collapsed {
+    max-height: 34px;
+    overflow: hidden;
+  }
+}

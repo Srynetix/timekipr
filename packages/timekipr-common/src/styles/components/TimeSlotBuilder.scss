@@ -1,0 +1,37 @@
+.timeslot-builder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  gap: 0.25rem;
+
+  &__field {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+
+    > label {
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 75%;
+
+      display: flex;
+      flex-direction: row;
+      gap: 0.25rem;
+    }
+
+    &--name {
+      > input {
+        text-align: center;
+      }
+    }
+
+    &--percentage {
+      input {
+        width: 2rem;
+      }
+    }
+  }
+}

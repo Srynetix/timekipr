@@ -1,0 +1,66 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 8px;
+  background-color: rgb(50, 50, 50);
+  padding: 0.5rem;
+
+  &__title {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.3em 0.6em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    transition: border-color 0.25s;
+    user-select: none;
+
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__slots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__overall-counter {
+    > * {
+      padding: 0 0.5rem;
+    }
+
+    &__elapsed {
+      font-weight: bold;
+    }
+
+    &__total {
+      font-weight: bold;
+    }
+
+    &__delta {
+      font-weight: bold;
+
+      &--positive {
+        color: rgb(226, 66, 66)
+      }
+
+      &--negative {
+        color: rgb(94, 219, 94)
+      }
+    }
+  }
+}

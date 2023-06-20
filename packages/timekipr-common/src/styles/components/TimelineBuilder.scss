@@ -1,0 +1,47 @@
+.timeline-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 8px;
+  background-color: rgb(50, 50, 50);
+  padding: 0.5rem;
+
+  &--collapsed {
+    max-height: 34px;
+    overflow: hidden;
+  }
+
+  &__slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+
+    border: 1px solid rgb(70, 70, 70);
+    border-radius: 8px;
+    background-color: #222222;
+    padding: 0.5rem;
+
+    width: 95%;
+  }
+
+  &__buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+  }
+
+  &__preview {
+    border: 1px solid black;
+    padding: 1rem;
+
+    > label {
+      font-weight: bold;
+    }
+  }
+}

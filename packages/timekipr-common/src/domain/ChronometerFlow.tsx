@@ -1,3 +1,4 @@
+import { SHOW_NOTIFICATIONS } from "../constants";
 import { Chronometer } from "./Chronometer";
 import { ChronometerFlowDefinition } from "./ChronometerFlowDefinition";
 import { ChronometerSnapshot } from "./ChronometerSnapshot";
@@ -6,27 +7,25 @@ import { Duration } from "./Duration";
 export class ChronometerFlow {
   private _chronometers: Chronometer[];
   private _currentChronometerIndex: number;
-  private _paused: boolean;
+  private _started: boolean;
 
   constructor(definitions: ChronometerFlowDefinition[]) {
     this._chronometers = definitions.map(
-      (d) => new Chronometer(d.name, d.timeLimit, d.warnAtPercentage)
+      (d) => new Chronometer(d.name, d.timeLimit, d.alerts)
     );
     this._currentChronometerIndex = 0;
-    this._paused = true;
+    this._started = false;
 
     this._chronometers.forEach((c) => {
       c.onFinished = this.sendFinishedNotification.bind(this);
-      c.onWarn = this.sendWarnNotification.bind(this);
+      c.onAlert = this.sendAlertNotification.bind(this);
     });
   }
 
-  sendWarnNotification(chronometer: Chronometer) {
-    if (Notification.permission == "granted") {
-      const remainingSeconds = new Duration(
-        chronometer.timeLimit.seconds - chronometer.elapsedTime.seconds
-      );
-      let message = `Only ${remainingSeconds.toHumanReadableString()} left for "${
+  sendAlertNotification(chronometer: Chronometer, remainingSeconds: number) {
+    if (SHOW_NOTIFICATIONS && Notification.permission == "granted") {
+      const remaining = new Duration(remainingSeconds);
+      let message = `Only ${remaining.toHumanReadableString()} left for "${
         chronometer.name
       }"`;
 
@@ -41,7 +40,7 @@ export class ChronometerFlow {
   }
 
   sendFinishedNotification(chronometer: Chronometer) {
-    if (Notification.permission == "granted") {
+    if (SHOW_NOTIFICATIONS && Notification.permission == "granted") {
       let message = `Time's up! "${chronometer.name}" ended`;
 
       if (this._currentChronometerIndex + 1 != this._chronometers.length) {
@@ -66,12 +65,13 @@ export class ChronometerFlow {
     return this._chronometers[this._currentChronometerIndex];
   }
 
-  get paused(): boolean {
-    return this._paused;
+  start() {
+    this._started = true;
+    this.currentChronometer.start();
   }
 
-  setPause(value: boolean) {
-    this._paused = value;
+  get started(): boolean {
+    return this._started;
   }
 
   get chronometerIndex(): number {
@@ -81,31 +81,51 @@ export class ChronometerFlow {
   get finished(): boolean {
     return (
       this._currentChronometerIndex == this._chronometers.length - 1 &&
-      this.currentChronometer.finished
+      this.currentChronometer.stopped
+    );
+  }
+
+  get totalTimeLimit(): Duration {
+    return new Duration(
+      this._chronometers
+        .map((c) => c.timeLimit.seconds)
+        .reduce((acc, x) => acc + x, 0)
+    );
+  }
+
+  get totalElapsedTime(): Duration {
+    return new Duration(
+      this._chronometers
+        .map((c) => c.elapsedTime.seconds)
+        .reduce((acc, x) => acc + x, 0)
+    );
+  }
+
+  get deltaValue(): Duration {
+    return new Duration(
+      this._chronometers
+        .map((c) => c.effectiveDeltaValue.seconds)
+        .reduce((acc, x) => acc + x, 0)
     );
   }
 
   tick(seconds: number) {
-    if (this.finished || this._paused) {
+    if (
+      this.finished ||
+      this._chronometers.length == 0 ||
+      !this.currentChronometer.started
+    ) {
       return;
     }
 
-    const diffSeconds =
-      this.currentChronometer.timeLimit.seconds -
-      this.currentChronometer.elapsedTime.seconds;
-    const secondsToAdd = Math.min(seconds, diffSeconds);
-    const remainingSeconds = seconds - secondsToAdd;
-
-    this.currentChronometer.tick(secondsToAdd);
+    this.currentChronometer.tick(seconds);
 
     if (this.finished) {
       return;
-    } else if (this.currentChronometer.finished) {
+    } else if (this.currentChronometer.stopped) {
+      // Start next one!
       this._currentChronometerIndex += 1;
-    }
-
-    if (remainingSeconds > 0) {
-      this.tick(remainingSeconds);
+      this.currentChronometer.start();
     }
   }
 }

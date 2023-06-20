@@ -1,0 +1,9 @@
+@use "./variables.scss";
+
+#root {
+  min-width: variables.$app-max-width;
+  max-width: variables.$app-max-width;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}

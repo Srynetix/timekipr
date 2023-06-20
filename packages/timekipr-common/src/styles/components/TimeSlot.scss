@@ -1,0 +1,71 @@
+.timeslot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  border: 1px solid rgb(70, 70, 70);
+  border-radius: 8px;
+  background-color: #222222;
+  padding: 0.5rem;
+
+  &--finished {
+    background-color: rgb(42, 81, 42);
+  }
+
+  &--progress {
+    background-color: rgb(42, 42, 81);
+  }
+
+  &__title {
+    font-size: 70%;
+
+    &__header {
+      width: 75px;
+      font-weight: bold;
+    }
+  }
+
+  &__progress {
+    display: flex;
+    flex-direction: column;
+    width: 50px;
+
+    &__bar {
+      width: 50px;
+    }
+
+    &__alerts {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+
+      &__alert {
+        svg {
+          height: 16px;
+        }
+
+        &--shown {
+          color: greenyellow;
+        }
+      }
+    }
+  }
+
+  &__check {
+    width: 32px;
+    padding: 0.2rem;
+  }
+
+  &__delta-value {
+    width: 50px;
+
+    &--positive {
+      color: rgb(226, 66, 66)
+    }
+
+    &--negative {
+      color: rgb(94, 219, 94)
+    }
+  }
+}
