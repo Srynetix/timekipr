@@ -1,0 +1,20 @@
+.inline-help {
+  text-align: initial;
+  padding: 0.25rem 0.75rem;
+  background-color: #231a24;
+  border-radius: 8px;
+  font-style: italic;
+  font-size: 90%;
+
+  p {
+    margin: 0.5rem 0;
+  }
+
+  ul {
+    text-align: initial;
+  }
+
+  button {
+    font-size: 75%;
+  }
+}

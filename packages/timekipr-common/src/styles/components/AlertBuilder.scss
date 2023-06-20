@@ -1,0 +1,16 @@
+.alert-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &__entry {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+
+    > button {
+      width: 32px;
+    }
+  }
+}

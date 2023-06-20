@@ -3,8 +3,10 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev-common": "npm run --prefix ./packages/timekipr-common dev",
     "lint": "turbo run lint",
-    "fmt": "prettier --write \"**/*.{ts,tsx,md}\""
+    "fmt": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "build-desktop": "npm run --prefix ./apps/timekipr-desktop tauri build"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",

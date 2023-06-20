@@ -9,11 +9,14 @@ import { Timeline } from "./components/Timeline";
 
 import logo from "./assets/icon.png";
 import { HashSetter } from "./components/HashSetter";
+import clsx from "clsx";
 
 function App() {
   const initialDefinitions = loadHash(window.location.hash.slice(1));
   const [definitions, setDefinitions] =
     useState<ChronometerFlowDefinition[]>(initialDefinitions);
+  const [playing, setPlaying] = useState(false);
+  const [chronometerView, setChronometerView] = useState(false);
 
   useEffect(() => {
     const handler = () => {
@@ -37,21 +40,35 @@ function App() {
 
   return (
     <div className="app">
-      <div className="app__header">
+      <div
+        className={clsx("app__header", { "app__header--animated": playing })}
+      >
         <div className="app__header__logo">
           <img src={logo} alt="logo" />
         </div>
         <div className="app__header__title">timekipr</div>
       </div>
-      <TimelineBuilder
+      {!chronometerView && (
+        <>
+          <TimelineBuilder
+            definitions={definitions}
+            setDefinitions={setDefinitions}
+            readonly={playing}
+          />
+          <HashSetter
+            hash={window.location.hash.slice(1)}
+            onHashLoad={(h) => (window.location.hash = h)}
+            readonly={playing}
+          />
+        </>
+      )}
+      <Timeline
         definitions={definitions}
-        setDefinitions={setDefinitions}
+        chronometerView={chronometerView}
+        setChronometerView={setChronometerView}
+        onPlay={() => setPlaying(true)}
+        onReset={() => setPlaying(false)}
       />
-      <HashSetter
-        hash={window.location.hash.slice(1)}
-        onHashLoad={(h) => (window.location.hash = h)}
-      />
-      <Timeline definitions={definitions} />
     </div>
   );
 }

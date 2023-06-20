@@ -1,0 +1,13 @@
+.collapsible-title {
+  width: 100%;
+
+  &__chevron-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    > svg {
+      width: 14px;
+    }
+  }
+}

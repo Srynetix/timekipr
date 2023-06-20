@@ -1,11 +1,13 @@
+import { Duration } from "../domain/Duration";
 import { DurationModel } from "../domain/DurationModel";
 
 export interface Props {
   value: DurationModel;
   onChange: (value: DurationModel) => void;
+  readonly: boolean;
 }
 
-export const DurationPicker = ({ value, onChange }: Props) => {
+export const DurationPicker = ({ value, onChange, readonly }: Props) => {
   const changeField = (fieldName: keyof DurationModel, fieldValue: string) => {
     if (fieldValue !== "") {
       onChange({ ...value, [fieldName]: parseInt(fieldValue) });
@@ -24,10 +26,15 @@ export const DurationPicker = ({ value, onChange }: Props) => {
   };
 
   return (
-    <div className="duration-picker">
+    <div
+      className="duration-picker"
+      title={Duration.fromModel(value).toHumanReadableString()}
+    >
       <div className="duration-picker__field">
         <input
           type="number"
+          min="0"
+          disabled={readonly}
           value={numberOrSpace(value.hours)}
           onChange={(v) => changeField("hours", v.target.value)}
         />
@@ -36,6 +43,8 @@ export const DurationPicker = ({ value, onChange }: Props) => {
       <div className="duration-picker__field">
         <input
           type="number"
+          min="0"
+          disabled={readonly}
           value={numberOrSpace(value.minutes)}
           onChange={(v) => changeField("minutes", v.target.value)}
         />
@@ -44,6 +53,8 @@ export const DurationPicker = ({ value, onChange }: Props) => {
       <div className="duration-picker__field">
         <input
           type="number"
+          min="0"
+          disabled={readonly}
           value={numberOrSpace(value.seconds)}
           onChange={(v) => changeField("seconds", v.target.value)}
         />

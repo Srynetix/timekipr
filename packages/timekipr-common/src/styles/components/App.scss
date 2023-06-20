@@ -1,0 +1,42 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &__header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    user-select: none;
+
+    &--animated {
+      animation: logo-animation 2s ease-in infinite;
+    }
+
+    &__title {
+      font-size: 150%;
+      font-weight: bold;
+    }
+
+    &__logo {
+      width: 64px;
+    }
+  }
+}
+
+@keyframes logo-animation {
+  from {
+    filter: hue-rotate(0) blur(0)
+  }
+
+  50% {
+    filter: hue-rotate(180deg) blur(1px)
+  }
+
+  to {
+    filter: hue-rotate(360deg) blur(0)
+  }
+}

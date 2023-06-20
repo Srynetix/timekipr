@@ -1,32 +1,102 @@
 import { TimeSlotBuilder } from "./TimeSlotBuilder";
-import { ChronometerFlowDefinition } from "../domain/ChronometerFlowDefinition";
+import {
+  ChronometerFlowDefinition,
+  buildDefaultDefinition,
+} from "../domain/ChronometerFlowDefinition";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash } from "react-feather";
+import { Box, ChevronsDown, ChevronsUp, Plus, Trash } from "react-feather";
+import { Button } from "./Button";
+import { CollapsibleTitle } from "./CollapsibleTitle";
+import {
+  immutableArrayInsert,
+  immutableArrayMoveIndex,
+  immutableArrayRemove,
+} from "../utils";
+import { InlineHelp } from "./InlineHelp";
 
 export interface Props {
   definitions: ChronometerFlowDefinition[];
   setDefinitions: (definitions: ChronometerFlowDefinition[]) => void;
+  readonly: boolean;
 }
 
-export const TimelineBuilder = ({ definitions, setDefinitions }: Props) => {
-  const [collapsed, setCollapsed] = useState(false);
+const HelpText = () => (
+  <InlineHelp>
+    <p>
+      Create a new time slot using the{" "}
+      <Button primary inline>
+        <Plus />
+        Add
+      </Button>{" "}
+      button.
+    </p>
+    <p>Then you can setup:</p>
+    <ul>
+      <li>
+        The slot <b>name</b>,
+      </li>
+      <li>
+        The slot <b>duration</b> (you can specify an amount of seconds, minutes
+        and hours),
+      </li>
+      <li>
+        The slot <b>alerts</b>, where you can setup notifications at specific
+        "remaining durations".
+      </li>
+    </ul>
+    <p>
+      You can also move slots using the{" "}
+      <Button primary inline>
+        <ChevronsUp />
+        Move up
+      </Button>{" "}
+      and{" "}
+      <Button primary inline>
+        <ChevronsDown />
+        Move down
+      </Button>{" "}
+      buttons, and remove slots using the{" "}
+      <Button primary inline>
+        <Trash />
+        Remove
+      </Button>{" "}
+      button.
+    </p>
+  </InlineHelp>
+);
+
+export const TimelineBuilder = ({
+  definitions,
+  setDefinitions,
+  readonly,
+}: Props) => {
+  const [collapsed, setCollapsed] = useState(true);
 
   const updateDefinition = (
     index: number,
     value: ChronometerFlowDefinition
   ) => {
-    setDefinitions([
-      ...definitions.slice(0, index),
-      value,
-      ...definitions.slice(index + 1),
-    ]);
+    setDefinitions(immutableArrayInsert(definitions, index, value));
   };
 
   const removeDefinition = (index: number) => {
-    setDefinitions([
-      ...definitions.slice(0, index),
-      ...definitions.slice(index + 1),
-    ]);
+    setDefinitions(immutableArrayRemove(definitions, index));
+  };
+
+  const moveUp = (index: number) => {
+    if (index == 0) {
+      return;
+    }
+
+    setDefinitions(immutableArrayMoveIndex(definitions, index, index - 1));
+  };
+
+  const moveDown = (index: number) => {
+    if (index == definitions.length - 1) {
+      return;
+    }
+
+    setDefinitions(immutableArrayMoveIndex(definitions, index, index + 1));
   };
 
   return (
@@ -35,40 +105,60 @@ export const TimelineBuilder = ({ definitions, setDefinitions }: Props) => {
         collapsed ? "timeline-builder--collapsed" : ""
       }`}
     >
-      <div className="timeline-builder__title">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="timeline-builder__collapseIcon"
-          title={collapsed ? "Show builder" : "Hide builder"}
-        >
-          {!collapsed ? <ChevronDown /> : <ChevronUp />}
-          Timeline Builder
-        </button>
-      </div>
-
+      <CollapsibleTitle
+        leftIcon={<Box />}
+        collapsed={collapsed}
+        collapsedTitle="Show builder"
+        visibleTitle="Hide builder"
+        name="Timeline Builder"
+        onClick={() => setCollapsed(!collapsed)}
+      />
+      <HelpText />
       {definitions.map((d, idx) => (
         <div key={idx} className="timeline-builder__slot">
           <TimeSlotBuilder
             definition={d}
             onChange={(def) => updateDefinition(idx, def)}
+            readonly={readonly}
           />
-          <button onClick={() => removeDefinition(idx)}>
-            <Trash />
-            Remove
-          </button>
+          <div className="timeline-builder__buttons">
+            <Button
+              primary
+              disabled={readonly || idx == 0}
+              onClick={() => moveUp(idx)}
+            >
+              <ChevronsUp />
+              Move up
+            </Button>
+            <Button
+              primary
+              disabled={readonly || idx == definitions.length - 1}
+              onClick={() => moveDown(idx)}
+            >
+              <ChevronsDown />
+              Move down
+            </Button>
+            <Button
+              primary
+              disabled={readonly}
+              onClick={() => removeDefinition(idx)}
+            >
+              <Trash />
+              Remove
+            </Button>
+          </div>
         </div>
       ))}
-      <button
+      <Button
+        primary
+        disabled={readonly}
         onClick={() =>
-          setDefinitions([
-            ...definitions,
-            { name: "", timeLimit: {}, warnAtPercentage: 50 },
-          ])
+          setDefinitions([...definitions, buildDefaultDefinition()])
         }
       >
         <Plus />
         Add
-      </button>
+      </Button>
     </div>
   );
 };

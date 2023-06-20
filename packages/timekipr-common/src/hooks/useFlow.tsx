@@ -3,8 +3,19 @@ import { ChronometerFlowDefinition } from "../domain/ChronometerFlowDefinition";
 import { ChronometerFlow } from "../domain/ChronometerFlow";
 
 export const useFlow = (definitions: ChronometerFlowDefinition[]) => {
-  const [flow, setFlow] = useState(new ChronometerFlow(definitions));
+  const [flow, setFlow] = useState(() => new ChronometerFlow(definitions));
   const [chronometers, setChronometers] = useState(flow.snapshot());
+  const [flowElapsedTime, setFlowElapsedTime] = useState("");
+  const [flowTotalTime, setFlowTotalTime] = useState("");
+  const [flowDeltaValue, setFlowDeltaValue] = useState(0);
+  const [flowDeltaValueHumanReadable, setFlowDeltaValueHumanReadable] =
+    useState("");
+
+  const resetFlow = () => {
+    const flow = new ChronometerFlow(definitions);
+    setFlow(flow);
+    setChronometers(flow.snapshot());
+  };
 
   useEffect(() => {
     const flow = new ChronometerFlow(definitions);
@@ -12,17 +23,23 @@ export const useFlow = (definitions: ChronometerFlowDefinition[]) => {
     setChronometers(flow.snapshot());
   }, [definitions]);
 
-  const paused = useCallback(() => {
-    return flow.paused;
+  const startFlow = () => {
+    flow.start();
+    setChronometers(flow.snapshot());
+  };
+
+  const validateChronometer = () => {
+    flow.currentChronometer.finish();
+    setChronometers(flow.snapshot());
+  };
+
+  const started = useCallback(() => {
+    return flow.started;
   }, [flow]);
 
-  const setPause = useCallback(
-    (value: boolean) => {
-      flow.setPause(value);
-      setChronometers(flow.snapshot());
-    },
-    [flow]
-  );
+  const currentChronometer = () => {
+    return flow.currentChronometer?.snapshot();
+  };
 
   const finished = useCallback(() => {
     return flow.finished;
@@ -38,6 +55,10 @@ export const useFlow = (definitions: ChronometerFlowDefinition[]) => {
       flow.tick(seconds);
       previousTime = nowTime;
 
+      setFlowElapsedTime(flow.totalElapsedTime.toHumanReadableString());
+      setFlowTotalTime(flow.totalTimeLimit.toHumanReadableString());
+      setFlowDeltaValue(flow.deltaValue.seconds);
+      setFlowDeltaValueHumanReadable(flow.deltaValue.toHumanReadableString());
       setChronometers(flow.snapshot());
     }, 1000);
 
@@ -46,5 +67,17 @@ export const useFlow = (definitions: ChronometerFlowDefinition[]) => {
     };
   }, [flow]);
 
-  return { setPause, paused, finished, chronometers };
+  return {
+    startFlow,
+    started,
+    finished,
+    resetFlow,
+    flowDeltaValue,
+    flowDeltaValueHumanReadable,
+    flowElapsedTime,
+    flowTotalTime,
+    validateChronometer,
+    currentChronometer,
+    chronometers,
+  };
 };

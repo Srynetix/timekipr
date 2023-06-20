@@ -1,0 +1,9 @@
+.duration-picker {
+  display: flex;
+
+  &__field {
+    > input {
+      width: 2rem;
+    }
+  }
+}

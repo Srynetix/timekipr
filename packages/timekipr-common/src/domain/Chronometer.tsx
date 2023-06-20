@@ -1,32 +1,67 @@
+import { ChronometerAlertDefinition } from "./ChronometerFlowDefinition";
 import { ChronometerSnapshot } from "./ChronometerSnapshot";
 import { Duration } from "./Duration";
 import { DurationModel } from "./DurationModel";
+
+export interface ChronometerAlert {
+  remainingTime: Duration;
+  shown: boolean;
+}
 
 export class Chronometer {
   private _name: string;
   private _elapsedTime: Duration;
   private _timeLimit: Duration;
-  private _warnAtPercentage: number;
-  private _warnPassed: boolean;
+  private _alerts: ChronometerAlert[];
   private _timeOutPassed: boolean;
+  private _startedAt: Date | null;
+  private _finishedAt: Date | null;
 
-  onWarn: ((chrono: Chronometer) => void) | null;
+  onAlert: ((chrono: Chronometer, remainingSeconds: number) => void) | null;
   onFinished: ((chrono: Chronometer) => void) | null;
 
   constructor(
     name: string,
     timeLimit: DurationModel,
-    warnAtPercentage: number
+    alerts: ChronometerAlertDefinition[]
   ) {
     this._name = name;
     this._elapsedTime = new Duration(0);
     this._timeLimit = Duration.fromModel(timeLimit);
-    this._warnAtPercentage = warnAtPercentage;
-    this._warnPassed = false;
     this._timeOutPassed = false;
+    this._startedAt = null;
+    this._finishedAt = null;
+    this._alerts = alerts.map((d) => ({
+      remainingTime: Duration.fromModel(d.remainingTime),
+      shown: false,
+    }));
 
-    this.onWarn = null;
+    this.onAlert = null;
     this.onFinished = null;
+  }
+
+  start() {
+    this._startedAt = new Date();
+  }
+
+  finish() {
+    this._finishedAt = new Date();
+  }
+
+  get effectiveDeltaValue(): Duration {
+    if (!this.stopped && !this.timedOut) {
+      return new Duration(0);
+    }
+
+    return this.deltaValue;
+  }
+
+  get deltaValue(): Duration {
+    return new Duration(+this._elapsedTime - +this._timeLimit);
+  }
+
+  get timedOut(): boolean {
+    return +this._timeLimit > 0 && this._elapsedTime >= this._timeLimit;
   }
 
   snapshot(): ChronometerSnapshot {
@@ -41,7 +76,15 @@ export class Chronometer {
               (this._elapsedTime.seconds / this._timeLimit.seconds) * 100
             )
           : 0,
-      finished: this.finished,
+      started: this.started,
+      stopped: this.stopped,
+      deltaValueSeconds: this.deltaValue.seconds,
+      timedOut: this.timedOut,
+      deltaValueHumanReadable: this.deltaValue.toHumanReadableString(),
+      alerts: this._alerts.map((a) => ({
+        remainingTimeSeconds: a.remainingTime.seconds,
+        shown: a.shown,
+      })),
     };
   }
 
@@ -57,43 +100,46 @@ export class Chronometer {
     return this._elapsedTime;
   }
 
-  get finished(): boolean {
-    return +this._timeLimit > 0 && this._elapsedTime >= this._timeLimit;
-  }
-
   get progress(): number {
     return this._timeLimit.seconds > 0
       ? Math.floor((this._elapsedTime.seconds / this._timeLimit.seconds) * 100)
       : 0;
   }
 
+  get started(): boolean {
+    return this._startedAt != null;
+  }
+
+  get stopped(): boolean {
+    return this._finishedAt != null;
+  }
+
   tick(seconds: number) {
-    if (this._elapsedTime < this._timeLimit) {
-      this._elapsedTime.addSeconds(seconds);
-      this._elapsedTime.clamp(this._timeLimit.seconds);
+    if (!this.started || this.stopped) {
+      return;
+    }
 
-      if (this.warnPassed()) {
-        this.sendWarnNotification();
-      }
+    this._elapsedTime.addSeconds(seconds);
 
-      if (this.timeOutPassed()) {
-        this.sendTimeOutNotification();
-      }
+    this.processAlerts();
+
+    if (this.timeOutPassed()) {
+      this.sendTimeOutNotification();
     }
   }
 
-  warnPassed(): boolean {
-    if (
-      !this._warnPassed &&
-      this._warnAtPercentage > 0 &&
-      this._warnAtPercentage < 100 &&
-      this.progress >= this._warnAtPercentage
-    ) {
-      this._warnPassed = true;
-      return true;
-    }
+  processAlerts() {
+    const remainingTime = this._timeLimit.seconds - this._elapsedTime.seconds;
 
-    return false;
+    for (const alert of this._alerts) {
+      if (!alert.shown && alert.remainingTime.seconds >= remainingTime) {
+        alert.shown = true;
+
+        if (this.onAlert) {
+          this.onAlert(this, alert.remainingTime.seconds);
+        }
+      }
+    }
   }
 
   timeOutPassed(): boolean {
@@ -106,12 +152,6 @@ export class Chronometer {
     }
 
     return false;
-  }
-
-  sendWarnNotification() {
-    if (this.onWarn) {
-      this.onWarn(this);
-    }
   }
 
   sendTimeOutNotification() {

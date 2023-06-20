@@ -1,0 +1,52 @@
+.app-button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.3em 0.6em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  user-select: none;
+
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  &:hover:not([disabled]) {
+    border-color: #ae21ff;
+  }
+
+  &[disabled] {
+    cursor: inherit;
+  }
+
+  &:focus, &:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
+
+  &--primary {
+    background-color: rgb(20, 30, 55);
+    font-size: 80%;
+    border: 1px solid rgb(25, 1, 61);
+
+    &:hover:not([disabled]) {
+      border-color: #6a34ff;
+    }
+  }
+
+  &--inline {
+    width: auto;
+    display: inline-flex;
+    vertical-align: middle;
+    height: 24px;
+    gap: 0;
+
+    > svg {
+      height: 18px;
+    }
+  }
+}

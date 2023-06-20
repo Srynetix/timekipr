@@ -40,9 +40,15 @@ export class Duration {
   }
 
   toHumanReadableString(): string {
-    const minutesAmount = Math.floor(this._seconds / 60.0);
+    const sign = Math.sign(this._seconds);
+    const seconds = Math.abs(this._seconds);
+
+    const secondsAmount = seconds % 60;
+    let minutesAmount = Math.floor(seconds / 60.0);
     const hoursAmount = Math.floor(minutesAmount / 60.0);
-    const secondsAmount = this._seconds % 60.0;
+
+    minutesAmount %= 60;
+
     let output = "";
 
     if (hoursAmount > 0) {
@@ -55,6 +61,10 @@ export class Duration {
 
     if (secondsAmount > 0 || output === "") {
       output += `${secondsAmount}s`;
+    }
+
+    if (sign < 0) {
+      output = "-" + output;
     }
 
     return output;
