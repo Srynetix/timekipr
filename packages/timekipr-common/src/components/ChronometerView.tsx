@@ -1,14 +1,7 @@
-import {
-  AlertCircle,
-  Box,
-  CheckCircle,
-  PlayCircle,
-  RefreshCw,
-} from "react-feather";
+import { Box, CheckCircle, PlayCircle, RefreshCw } from "react-feather";
 import { Button } from "./Button";
 import clsx from "clsx";
 import { ChronometerTimelineSnapshot } from "../domain/ChronometerTimelineSnapshot";
-import { immutableArraySort } from "../utils";
 import { Duration } from "../domain/Duration";
 
 export interface Props {
