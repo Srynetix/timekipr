@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { TimelineBuilder } from "./components/TimelineBuilder";
 import {
-  ChronometerFlowDefinition,
+  ChronometerTimelineProps,
   buildHash,
   loadHash,
-} from "./domain/ChronometerFlowDefinition";
+} from "./domain/ChronometerTimelineProps";
 import { Timeline } from "./components/Timeline";
 
 import { HashSetter } from "./components/HashSetter";
@@ -13,7 +13,7 @@ import { AppHeader } from "./components/AppHeader";
 function App() {
   const initialDefinitions = loadHash(window.location.hash.slice(1));
   const [definitions, setDefinitions] =
-    useState<ChronometerFlowDefinition[]>(initialDefinitions);
+    useState<ChronometerTimelineProps[]>(initialDefinitions);
   const [playing, setPlaying] = useState(false);
   const [chronometerView, setChronometerView] = useState(false);
 

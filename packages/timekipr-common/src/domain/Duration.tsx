@@ -1,13 +1,17 @@
-import { DurationModel } from "./DurationModel";
+import { DurationProps } from "./DurationProps";
 
 export class Duration {
   private _seconds: number;
 
-  constructor(seconds: number) {
+  private constructor(seconds: number) {
     this._seconds = seconds;
   }
 
-  static fromModel(model: DurationModel): Duration {
+  static fromSeconds(seconds: number): Duration {
+    return new Duration(seconds);
+  }
+
+  static fromProps(model: DurationProps): Duration {
     return new Duration(
       (model.seconds || 0) +
         (model.minutes || 0) * 60 +

@@ -1,7 +1,7 @@
-import { ChronometerAlertDefinition } from "./ChronometerFlowDefinition";
 import { ChronometerSnapshot } from "./ChronometerSnapshot";
 import { Duration } from "./Duration";
-import { DurationModel } from "./DurationModel";
+import { DurationProps } from "./DurationProps";
+import { ChronometerAlertProps } from "./ChronometerAlertProps";
 
 export interface ChronometerAlert {
   remainingTime: Duration;
@@ -22,17 +22,17 @@ export class Chronometer {
 
   constructor(
     name: string,
-    timeLimit: DurationModel,
-    alerts: ChronometerAlertDefinition[]
+    timeLimit: DurationProps,
+    alerts: ChronometerAlertProps[]
   ) {
     this._name = name;
-    this._elapsedTime = new Duration(0);
-    this._timeLimit = Duration.fromModel(timeLimit);
+    this._elapsedTime = Duration.fromSeconds(0);
+    this._timeLimit = Duration.fromProps(timeLimit);
     this._timeOutPassed = false;
     this._startedAt = null;
     this._finishedAt = null;
     this._alerts = alerts.map((d) => ({
-      remainingTime: Duration.fromModel(d.remainingTime),
+      remainingTime: Duration.fromProps(d.remainingTime),
       shown: false,
     }));
 
@@ -50,14 +50,14 @@ export class Chronometer {
 
   get effectiveDeltaValue(): Duration {
     if (!this.stopped && !this.timedOut) {
-      return new Duration(0);
+      return Duration.fromSeconds(0);
     }
 
     return this.deltaValue;
   }
 
   get deltaValue(): Duration {
-    return new Duration(+this._elapsedTime - +this._timeLimit);
+    return Duration.fromSeconds(+this._elapsedTime - +this._timeLimit);
   }
 
   get timedOut(): boolean {

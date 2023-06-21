@@ -1,7 +1,4 @@
-export interface ChronometerAlertSnapshot {
-  remainingTimeSeconds: number;
-  shown: boolean;
-}
+import { ChronometerAlertSnapshot } from "./ChronometerAlertSnapshot";
 
 export interface ChronometerSnapshot {
   name: string;

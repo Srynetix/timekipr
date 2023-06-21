@@ -1,15 +1,15 @@
 import { SHOW_NOTIFICATIONS } from "../constants";
 import { Chronometer } from "./Chronometer";
-import { ChronometerFlowDefinition } from "./ChronometerFlowDefinition";
-import { ChronometerSnapshot } from "./ChronometerSnapshot";
+import { ChronometerTimelineProps } from "./ChronometerTimelineProps";
 import { Duration } from "./Duration";
+import { ChronometerTimelineSnapshot } from "./ChronometerTimelineSnapshot";
 
-export class ChronometerFlow {
+export class ChronometerTimeline {
   private _chronometers: Chronometer[];
   private _currentChronometerIndex: number;
   private _started: boolean;
 
-  constructor(definitions: ChronometerFlowDefinition[]) {
+  constructor(definitions: ChronometerTimelineProps[]) {
     this._chronometers = definitions.map(
       (d) => new Chronometer(d.name, d.timeLimit, d.alerts)
     );
@@ -24,7 +24,7 @@ export class ChronometerFlow {
 
   sendAlertNotification(chronometer: Chronometer, remainingSeconds: number) {
     if (SHOW_NOTIFICATIONS && Notification.permission == "granted") {
-      const remaining = new Duration(remainingSeconds);
+      const remaining = Duration.fromSeconds(remainingSeconds);
       let message = `Only ${remaining.toHumanReadableString()} left for "${
         chronometer.name
       }"`;
@@ -51,10 +51,6 @@ export class ChronometerFlow {
 
       new Notification(message);
     }
-  }
-
-  snapshot(): ChronometerSnapshot[] {
-    return this._chronometers.map((c) => c.snapshot());
   }
 
   get chronometers(): Chronometer[] {
@@ -86,7 +82,7 @@ export class ChronometerFlow {
   }
 
   get totalTimeLimit(): Duration {
-    return new Duration(
+    return Duration.fromSeconds(
       this._chronometers
         .map((c) => c.timeLimit.seconds)
         .reduce((acc, x) => acc + x, 0)
@@ -94,7 +90,7 @@ export class ChronometerFlow {
   }
 
   get totalElapsedTime(): Duration {
-    return new Duration(
+    return Duration.fromSeconds(
       this._chronometers
         .map((c) => c.elapsedTime.seconds)
         .reduce((acc, x) => acc + x, 0)
@@ -102,7 +98,7 @@ export class ChronometerFlow {
   }
 
   get deltaValue(): Duration {
-    return new Duration(
+    return Duration.fromSeconds(
       this._chronometers
         .map((c) => c.effectiveDeltaValue.seconds)
         .reduce((acc, x) => acc + x, 0)
@@ -127,5 +123,17 @@ export class ChronometerFlow {
       this._currentChronometerIndex += 1;
       this.currentChronometer.start();
     }
+  }
+
+  snapshot(): ChronometerTimelineSnapshot {
+    return {
+      chronometers: this.chronometers.map((c) => c.snapshot()),
+      elapsedTimeSeconds: this.totalElapsedTime.seconds,
+      totalTimeSeconds: this.totalTimeLimit.seconds,
+      deltaValueSeconds: this.deltaValue.seconds,
+      started: this.started,
+      finished: this.finished,
+      currentChronometer: this.currentChronometer?.snapshot(),
+    };
   }
 }

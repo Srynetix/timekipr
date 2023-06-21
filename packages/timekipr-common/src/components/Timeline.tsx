@@ -1,15 +1,16 @@
 import { Box, Clock, PlayCircle, RefreshCw, Share2 } from "react-feather";
-import { ChronometerFlowDefinition } from "../domain/ChronometerFlowDefinition";
-import { useFlow } from "../hooks/useFlow";
+import { ChronometerTimelineProps } from "../domain/ChronometerTimelineProps";
+import { useTimeline } from "../hooks/useTimeline";
 import { TimeSlot } from "./TimeSlot";
 import { Button } from "./Button";
 import clsx from "clsx";
 import { ChronometerView } from "./ChronometerView";
 import { InlineHelp } from "./InlineHelp";
 import { SHOW_NOTIFICATIONS } from "../constants";
+import { Duration } from "../domain/Duration";
 
 export interface Props {
-  definitions: ChronometerFlowDefinition[];
+  definitions: ChronometerTimelineProps[];
   chronometerView: boolean;
   setChronometerView: (value: boolean) => void;
   onPlay: () => void;
@@ -46,42 +47,35 @@ export const Timeline = ({
   onReset,
 }: Props) => {
   const {
-    startFlow,
-    started,
-    finished,
-    validateChronometer,
-    resetFlow,
-    currentChronometer,
-    flowDeltaValue,
-    flowDeltaValueHumanReadable,
-    flowElapsedTime,
-    flowTotalTime,
-    chronometers,
-  } = useFlow(definitions);
+    startTimeline,
+    markCurrentChronometerAsDone,
+    resetTimeline: resetTimelineInner,
+    timeline,
+  } = useTimeline(definitions);
 
   const onLocalPlay = () => {
     if (SHOW_NOTIFICATIONS && Notification.permission !== "denied") {
       Notification.requestPermission();
     }
 
-    startFlow();
+    startTimeline();
     onPlay();
   };
 
   const resetTimeline = () => {
-    resetFlow();
+    resetTimelineInner();
     onReset();
   };
 
-  const currentChronometerValue = currentChronometer();
-
-  if (chronometerView && currentChronometerValue != null) {
+  if (chronometerView && timeline.currentChronometer != null) {
     return (
       <div className="timeline">
         <ChronometerView
           switchToTimeline={() => setChronometerView(false)}
-          chronometer={currentChronometerValue}
-          onCheck={() => validateChronometer()}
+          timeline={timeline}
+          onCheck={() => markCurrentChronometerAsDone()}
+          onPlay={onLocalPlay}
+          onReset={resetTimeline}
         />
       </div>
     );
@@ -93,49 +87,49 @@ export const Timeline = ({
         <Clock />
         Timeline
       </div>
-      {chronometers.length == 0 && <HelpText />}
-      {chronometers.length > 0 && (
+      {timeline.chronometers.length == 0 && <HelpText />}
+      {timeline.chronometers.length > 0 && (
         <div className="timeline__slots">
-          {chronometers.map((chronometer, idx) => (
+          {timeline.chronometers.map((chronometer, idx) => (
             <TimeSlot
               key={idx}
               chronometer={chronometer}
-              onCheck={() => validateChronometer()}
+              onCheck={() => markCurrentChronometerAsDone()}
             />
           ))}
         </div>
       )}
-      {started() && (
+      {timeline.started && (
         <div className="timeline__overall-counter">
           <span className="timeline__overall-counter__elapsed">
-            {flowElapsedTime}
+            {Duration.fromSeconds(
+              timeline.elapsedTimeSeconds
+            ).toHumanReadableString()}
           </span>
           /
           <span className="timeline__overall-counter__total">
-            {flowTotalTime}
+            {Duration.fromSeconds(
+              timeline.totalTimeSeconds
+            ).toHumanReadableString()}
           </span>
           (
           <span
             className={clsx("timeline__overall-counter__delta", {
-              "timeline__overall-counter__delta--positive": flowDeltaValue > 0,
-              "timeline__overall-counter__delta--negative": flowDeltaValue <= 0,
+              "timeline__overall-counter__delta--positive":
+                timeline.deltaValueSeconds > 0,
+              "timeline__overall-counter__delta--negative":
+                timeline.deltaValueSeconds <= 0,
             })}
           >
-            {flowDeltaValueHumanReadable}
+            {Duration.fromSeconds(
+              timeline.deltaValueSeconds
+            ).toHumanReadableString()}
           </span>
           )
         </div>
       )}
       <div className="timeline__buttons">
-        <Button
-          primary
-          disabled={finished() || started() || chronometers.length == 0}
-          onClick={onLocalPlay}
-          title="Start timeline"
-        >
-          <PlayCircle /> Play
-        </Button>
-        {!!currentChronometerValue && (
+        {!!timeline.currentChronometer && (
           <Button
             primary
             onClick={() => setChronometerView(true)}
@@ -144,6 +138,19 @@ export const Timeline = ({
             <Clock /> Show chronometer
           </Button>
         )}
+        <Button
+          primary
+          disabled={
+            timeline.finished ||
+            timeline.started ||
+            timeline.chronometers.length == 0
+          }
+          onClick={onLocalPlay}
+          title="Start timeline"
+        >
+          <PlayCircle /> Play
+        </Button>
+
         <Button primary onClick={resetTimeline} title="Reset timeline">
           <RefreshCw /> Reset
         </Button>

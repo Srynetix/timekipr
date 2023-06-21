@@ -1,14 +1,14 @@
 import { Duration } from "../domain/Duration";
-import { DurationModel } from "../domain/DurationModel";
+import { DurationProps } from "../domain/DurationProps";
 
 export interface Props {
-  value: DurationModel;
-  onChange: (value: DurationModel) => void;
+  value: DurationProps;
+  onChange: (value: DurationProps) => void;
   readonly: boolean;
 }
 
 export const DurationPicker = ({ value, onChange, readonly }: Props) => {
-  const changeField = (fieldName: keyof DurationModel, fieldValue: string) => {
+  const changeField = (fieldName: keyof DurationProps, fieldValue: string) => {
     if (fieldValue !== "") {
       onChange({ ...value, [fieldName]: parseInt(fieldValue) });
     } else {
@@ -28,7 +28,7 @@ export const DurationPicker = ({ value, onChange, readonly }: Props) => {
   return (
     <div
       className="duration-picker"
-      title={Duration.fromModel(value).toHumanReadableString()}
+      title={Duration.fromProps(value).toHumanReadableString()}
     >
       <div className="duration-picker__field">
         <input

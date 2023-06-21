@@ -1,19 +1,17 @@
 import { Plus, Trash } from "react-feather";
-import {
-  ChronometerAlertDefinition,
-  buildDefaultAlertDefinition,
-} from "../domain/ChronometerFlowDefinition";
+import { buildDefaultAlertDefinition } from "../domain/ChronometerTimelineProps";
 import { Button } from "./Button";
 import { DurationPicker } from "./DurationPicker";
+import { ChronometerAlertProps } from "../domain/ChronometerAlertProps";
 
 export interface Props {
-  alerts: ChronometerAlertDefinition[];
-  onChange: (alerts: ChronometerAlertDefinition[]) => void;
+  alerts: ChronometerAlertProps[];
+  onChange: (alerts: ChronometerAlertProps[]) => void;
   readonly: boolean;
 }
 
 export const AlertBuilder = ({ alerts, onChange, readonly }: Props) => {
-  const updateAlerts = (index: number, value: ChronometerAlertDefinition) => {
+  const updateAlerts = (index: number, value: ChronometerAlertProps) => {
     onChange([...alerts.slice(0, index), value, ...alerts.slice(index + 1)]);
   };
 

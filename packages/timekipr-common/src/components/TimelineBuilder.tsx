@@ -1,8 +1,8 @@
 import { TimeSlotBuilder } from "./TimeSlotBuilder";
 import {
-  ChronometerFlowDefinition,
+  ChronometerTimelineProps,
   buildDefaultDefinition,
-} from "../domain/ChronometerFlowDefinition";
+} from "../domain/ChronometerTimelineProps";
 import { useState } from "react";
 import { Box, ChevronsDown, ChevronsUp, Plus, Trash } from "react-feather";
 import { Button } from "./Button";
@@ -15,8 +15,8 @@ import {
 import { InlineHelp } from "./InlineHelp";
 
 export interface Props {
-  definitions: ChronometerFlowDefinition[];
-  setDefinitions: (definitions: ChronometerFlowDefinition[]) => void;
+  definitions: ChronometerTimelineProps[];
+  setDefinitions: (definitions: ChronometerTimelineProps[]) => void;
   readonly: boolean;
 }
 
@@ -72,10 +72,7 @@ export const TimelineBuilder = ({
 }: Props) => {
   const [collapsed, setCollapsed] = useState(true);
 
-  const updateDefinition = (
-    index: number,
-    value: ChronometerFlowDefinition
-  ) => {
+  const updateDefinition = (index: number, value: ChronometerTimelineProps) => {
     setDefinitions(immutableArrayInsert(definitions, index, value));
   };
 

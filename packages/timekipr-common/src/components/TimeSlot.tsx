@@ -45,7 +45,7 @@ export const TimeSlot = ({ chronometer, onCheck }: Props) => {
               className={clsx("timeslot__progress__alerts__alert", {
                 "timeslot__progress__alerts__alert--shown": a.shown,
               })}
-              title={new Duration(
+              title={Duration.fromSeconds(
                 a.remainingTimeSeconds
               ).toHumanReadableString()}
             >
