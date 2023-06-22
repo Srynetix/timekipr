@@ -2,6 +2,10 @@
 
 A simple time-keeper app for meetings.
 
+<p align="center">
+    <img src="./docs/animation.gif" alt="animation" />
+</p>
+
 **:rocket: [Play with it here!](https://srynetix.github.io/timekipr/)**
 
 ## How to build
