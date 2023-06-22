@@ -3160,7 +3160,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "timekipr-desktop"
+name = "timekipr"
 version = "0.0.0"
 dependencies = [
  "serde",
