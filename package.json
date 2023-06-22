@@ -2,11 +2,13 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "dev-common": "npm run --prefix ./packages/timekipr-common dev",
     "lint": "turbo run lint",
     "fmt": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "build-desktop": "npm run --prefix ./apps/timekipr-desktop tauri build"
+    "dev:common": "turbo run dev --filter timekipr-common",
+    "build:desktop": "turbo run tauri:build --filter timekipr-desktop",
+    "dev:desktop": "turbo run tauri:dev --filter timekipr-desktop",
+    "build:web": "turbo run build --filter timekipr-web",
+    "serve:web": "turbo run serve --filter timekipr-web"
   },
   "devDependencies": {
     "@turbo/gen": "^1.9.7",

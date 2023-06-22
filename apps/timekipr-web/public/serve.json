@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    {"source": "/timekipr/assets/:path", "destination": "/assets/:path"}
+  ]
+}

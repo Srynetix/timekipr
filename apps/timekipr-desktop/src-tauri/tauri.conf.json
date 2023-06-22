@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "timekipr-desktop",
+    "productName": "timekipr",
     "version": "0.2.0"
   },
   "tauri": {
@@ -39,7 +39,7 @@
         "resizable": false,
         "title": "timekipr-desktop",
         "width": 400,
-        "height": 600
+        "height": 500
       }
     ]
   }
