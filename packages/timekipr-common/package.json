@@ -15,6 +15,7 @@
   ],
   "main": "./dist/timekipr-common.umd.cjs",
   "module": "./dist/timekipr-common.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/timekipr-common.js",
@@ -41,6 +42,7 @@
     "prettier": "^2.8.8",
     "sass": "^1.63.4",
     "typescript": "^5.0.2",
-    "vite": "^4.3.9"
+    "vite": "^4.3.9",
+    "vite-plugin-dts": "^2.3.0"
   }
 }
