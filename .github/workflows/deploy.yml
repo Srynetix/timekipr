@@ -19,7 +19,12 @@ jobs:
       run: |
         npm i
         npm run build
-    - name: Deploy
+    - name: Deploy web app
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: apps/timekipr-web/dist
+    - name: Deploy Teams web app
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: apps/timekipr-teams/dist
+        target-folder: teams
