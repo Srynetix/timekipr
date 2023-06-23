@@ -11,10 +11,14 @@
   user-select: none;
 
   display: flex;
-  gap: 0.45rem;
+  gap: 4px;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+
+  > svg {
+    height: 18px;
+  }
 
   &:hover:not([disabled]) {
     border-color: #ae21ff;
@@ -30,7 +34,7 @@
 
   &--primary {
     background-color: rgb(20, 30, 55);
-    font-size: 80%;
+    font-size: 75%;
     border: 1px solid rgb(25, 1, 61);
 
     &:hover:not([disabled]) {

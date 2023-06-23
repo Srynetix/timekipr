@@ -1,3 +1,4 @@
-import { startApplication } from ".";
+import { startApplication, injectApplicationStyles } from ".";
 
+injectApplicationStyles();
 startApplication();
