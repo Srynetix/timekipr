@@ -6,10 +6,18 @@ import { ConfigPage } from "./pages/Config";
 import { startApplication, injectApplicationStyles } from "timekipr-common";
 
 async function main() {
-  await app.initialize();
+  try {
+    await app.initialize();
+  } catch {
+    console.error(
+      "could not initialize Teams client, make sure you are running the application in a Teams window"
+    );
+  }
 
   const queryParams = new URLSearchParams(location.search);
   const route = queryParams.get("route");
+
+  injectApplicationStyles();
 
   if (route == "config") {
     ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -18,7 +26,6 @@ async function main() {
       </React.StrictMode>
     );
   } else {
-    injectApplicationStyles();
     startApplication();
   }
 }
