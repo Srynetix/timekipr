@@ -4,9 +4,11 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "fmt": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "turbo": "turbo",
     "dev:common": "turbo run dev --filter timekipr-common",
     "build:desktop": "turbo run tauri:build --filter timekipr-desktop",
     "dev:desktop": "turbo run tauri:dev --filter timekipr-desktop",
+    "dev:teams": "turbo run dev:teamsfx --filter timekipr-teams",
     "build:web": "turbo run build --filter timekipr-web",
     "serve:web": "turbo run serve --filter timekipr-web"
   },

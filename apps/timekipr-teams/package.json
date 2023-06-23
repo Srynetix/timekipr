@@ -1,0 +1,28 @@
+{
+  "name": "timekipr-teams",
+  "version": "0.1.0",
+  "engines": {
+    "node": "16 || 18"
+  },
+  "private": true,
+  "dependencies": {
+    "timekipr-common": "*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.37",
+    "@types/react-dom": "^18.0.11",
+    "env-cmd": "^10.1.0",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "@microsoft/teams-js": "^2.12.0",
+    "typescript": "^5.0.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+    "build": "tsc && vite build",
+    "build:teamsfx": "cross-env-shell TEAMS_FX_ENV=local \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\""
+  },
+  "homepage": "."
+}
