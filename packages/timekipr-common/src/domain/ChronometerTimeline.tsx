@@ -1,25 +1,42 @@
 import { SHOW_NOTIFICATIONS } from "../constants";
 import { Chronometer } from "./Chronometer";
-import { ChronometerTimelineProps } from "./ChronometerTimelineProps";
-import { Duration } from "./Duration";
-import { ChronometerTimelineSnapshot } from "./ChronometerTimelineSnapshot";
+import { Duration } from "./value_objects/Duration";
+import { Option } from "../functional";
+
+export interface ChronometerTimelineProps {
+  chronometers: Chronometer[];
+  currentChronometerIndex: number;
+  started: boolean;
+}
 
 export class ChronometerTimeline {
-  private _chronometers: Chronometer[];
-  private _currentChronometerIndex: number;
-  private _started: boolean;
+  props: ChronometerTimelineProps;
 
-  constructor(definitions: ChronometerTimelineProps[]) {
-    this._chronometers = definitions.map(
-      (d) => new Chronometer(d.name, d.timeLimit, d.alerts)
-    );
-    this._currentChronometerIndex = 0;
-    this._started = false;
+  private constructor(props: ChronometerTimelineProps) {
+    this.props = props;
+  }
 
-    this._chronometers.forEach((c) => {
-      c.onFinished = this.sendFinishedNotification.bind(this);
-      c.onAlert = this.sendAlertNotification.bind(this);
+  bindChronometersEvents() {
+    this.props.chronometers.forEach((c) => {
+      c.connectOnFinished(this.sendFinishedNotification.bind(this));
+      c.connectOnAlert(this.sendAlertNotification.bind(this));
     });
+  }
+
+  static buildDefault() {
+    const timeline = new ChronometerTimeline({
+      chronometers: [],
+      currentChronometerIndex: 0,
+      started: false,
+    });
+    timeline.bindChronometersEvents();
+    return timeline;
+  }
+
+  static buildFromProps(props: ChronometerTimelineProps) {
+    const timeline = new ChronometerTimeline(props);
+    timeline.bindChronometersEvents();
+    return timeline;
   }
 
   sendAlertNotification(chronometer: Chronometer, remainingSeconds: number) {
@@ -29,9 +46,12 @@ export class ChronometerTimeline {
         chronometer.name
       }"`;
 
-      if (this._currentChronometerIndex + 1 != this._chronometers.length) {
+      if (
+        this.props.currentChronometerIndex + 1 !=
+        this.props.chronometers.length
+      ) {
         message += `, next "${
-          this._chronometers[this._currentChronometerIndex + 1].name
+          this.props.chronometers[this.props.currentChronometerIndex + 1].name
         }"`;
       }
 
@@ -43,9 +63,12 @@ export class ChronometerTimeline {
     if (SHOW_NOTIFICATIONS && Notification.permission == "granted") {
       let message = `Time's up! "${chronometer.name}" ended`;
 
-      if (this._currentChronometerIndex + 1 != this._chronometers.length) {
+      if (
+        this.props.currentChronometerIndex + 1 !=
+        this.props.chronometers.length
+      ) {
         message += `, next "${
-          this._chronometers[this._currentChronometerIndex + 1].name
+          this.props.chronometers[this.props.currentChronometerIndex + 1].name
         }"`;
       }
 
@@ -54,36 +77,43 @@ export class ChronometerTimeline {
   }
 
   get chronometers(): Chronometer[] {
-    return this._chronometers;
+    return this.props.chronometers;
   }
 
-  get currentChronometer(): Chronometer {
-    return this._chronometers[this._currentChronometerIndex];
+  get currentChronometer(): Option<Chronometer> {
+    if (this.props.chronometers.length > 0) {
+      return Option.buildSome(
+        this.props.chronometers[this.props.currentChronometerIndex]
+      );
+    }
+
+    return Option.buildNone();
   }
 
-  start() {
-    this._started = true;
-    this.currentChronometer.start();
+  startTimeline() {
+    this.props.started = true;
+    this.currentChronometer.unwrap().startChronometer();
   }
 
   get started(): boolean {
-    return this._started;
+    return this.props.started;
   }
 
-  get chronometerIndex(): number {
-    return this.chronometerIndex;
+  get currentChronometerIndex(): number {
+    return this.props.currentChronometerIndex;
   }
 
   get finished(): boolean {
     return (
-      this._currentChronometerIndex == this._chronometers.length - 1 &&
-      this.currentChronometer.stopped
+      this.props.currentChronometerIndex ==
+        this.props.chronometers.length - 1 &&
+      this.currentChronometer.map((c) => c.finished).unwrapOrElse(() => false)
     );
   }
 
   get totalTimeLimit(): Duration {
     return Duration.fromSeconds(
-      this._chronometers
+      this.props.chronometers
         .map((c) => c.timeLimit.seconds)
         .reduce((acc, x) => acc + x, 0)
     );
@@ -91,7 +121,7 @@ export class ChronometerTimeline {
 
   get totalElapsedTime(): Duration {
     return Duration.fromSeconds(
-      this._chronometers
+      this.props.chronometers
         .map((c) => c.elapsedTime.seconds)
         .reduce((acc, x) => acc + x, 0)
     );
@@ -99,41 +129,29 @@ export class ChronometerTimeline {
 
   get deltaValue(): Duration {
     return Duration.fromSeconds(
-      this._chronometers
-        .map((c) => c.effectiveDeltaValue.seconds)
+      this.props.chronometers
+        .map((c) => c.deltaValue.seconds)
         .reduce((acc, x) => acc + x, 0)
     );
   }
 
-  tick(seconds: number) {
+  tick(now: Date) {
     if (
       this.finished ||
-      this._chronometers.length == 0 ||
-      !this.currentChronometer.started
+      this.props.chronometers.length == 0 ||
+      !this.currentChronometer.unwrap().started
     ) {
       return;
     }
 
-    this.currentChronometer.tick(seconds);
+    this.currentChronometer.unwrap().tick(now);
 
     if (this.finished) {
       return;
-    } else if (this.currentChronometer.stopped) {
+    } else if (this.currentChronometer.unwrap().finished) {
       // Start next one!
-      this._currentChronometerIndex += 1;
-      this.currentChronometer.start();
+      this.props.currentChronometerIndex += 1;
+      this.currentChronometer.unwrap().startChronometer();
     }
-  }
-
-  snapshot(): ChronometerTimelineSnapshot {
-    return {
-      chronometers: this.chronometers.map((c) => c.snapshot()),
-      elapsedTimeSeconds: this.totalElapsedTime.seconds,
-      totalTimeSeconds: this.totalTimeLimit.seconds,
-      deltaValueSeconds: this.deltaValue.seconds,
-      started: this.started,
-      finished: this.finished,
-      currentChronometer: this.currentChronometer?.snapshot(),
-    };
   }
 }

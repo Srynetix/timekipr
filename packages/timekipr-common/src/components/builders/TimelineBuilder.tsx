@@ -1,22 +1,22 @@
 import { TimeSlotBuilder } from "./TimeSlotBuilder";
-import {
-  ChronometerTimelineProps,
-  buildDefaultDefinition,
-} from "../domain/ChronometerTimelineProps";
 import { useState } from "react";
-import { Box, ChevronsDown, ChevronsUp, Plus, Trash } from "react-feather";
-import { Button } from "./Button";
-import { CollapsibleTitle } from "./CollapsibleTitle";
+import { Box, ChevronsDown, ChevronsUp, Copy, Plus, Trash } from "react-feather";
+import { Button } from "../Button";
+import { CollapsibleTitle } from "../CollapsibleTitle";
 import {
   immutableArrayInsert,
+  immutableArrayInsertN,
   immutableArrayMoveIndex,
   immutableArrayRemove,
-} from "../utils";
-import { InlineHelp } from "./InlineHelp";
+} from "../../utils";
+import { InlineHelp } from "../InlineHelp";
+import { ChronometerDefinition } from "../../domain/mappers/ChronometerMapper";
+import { ChronometerTimelineDefinition } from "../../domain/mappers/ChronometerTimelineMapper";
+import { buildDefaultChronometerDefinition } from "../../domain/builders";
 
 export interface Props {
-  definitions: ChronometerTimelineProps[];
-  setDefinitions: (definitions: ChronometerTimelineProps[]) => void;
+  definition: ChronometerTimelineDefinition;
+  setDefinition: (definition: ChronometerTimelineDefinition) => void;
   readonly: boolean;
 }
 
@@ -55,7 +55,12 @@ const HelpText = () => (
         <ChevronsDown />
         Move down
       </Button>{" "}
-      buttons, and remove slots using the{" "}
+      buttons, duplicate slots using the{" "}
+      <Button primary inline>
+        <Copy />
+        Duplicate
+      </Button>{ " "}
+      button, and remove slots using the{" "}
       <Button primary inline>
         <Trash />
         Remove
@@ -66,34 +71,61 @@ const HelpText = () => (
 );
 
 export const TimelineBuilder = ({
-  definitions,
-  setDefinitions,
+  definition,
+  setDefinition,
   readonly,
 }: Props) => {
   const [collapsed, setCollapsed] = useState(true);
 
-  const updateDefinition = (index: number, value: ChronometerTimelineProps) => {
-    setDefinitions(immutableArrayInsert(definitions, index, value));
+  const updateDefinition = (index: number, value: ChronometerDefinition) => {
+    setDefinition({
+      ...definition,
+      chronometers: immutableArrayInsert(definition.chronometers, index, value),
+    });
   };
 
   const removeDefinition = (index: number) => {
-    setDefinitions(immutableArrayRemove(definitions, index));
+    setDefinition({
+      ...definition,
+      chronometers: immutableArrayRemove(definition.chronometers, index),
+    });
   };
+
+  const duplicateDefinition = (index: number) => {
+    setDefinition({
+      ...definition,
+      chronometers: immutableArrayInsertN(definition.chronometers, index, [{...definition.chronometers[index]}, {...definition.chronometers[index]}]),
+    });
+  }
 
   const moveUp = (index: number) => {
     if (index == 0) {
       return;
     }
 
-    setDefinitions(immutableArrayMoveIndex(definitions, index, index - 1));
+    setDefinition({
+      ...definition,
+      chronometers: immutableArrayMoveIndex(
+        definition.chronometers,
+        index,
+        index - 1
+      ),
+    });
   };
 
   const moveDown = (index: number) => {
-    if (index == definitions.length - 1) {
+    if (index == definition.chronometers.length - 1) {
       return;
     }
 
-    setDefinitions(immutableArrayMoveIndex(definitions, index, index + 1));
+    setDefinition({
+      ...definition,
+      chronometers: immutableArrayMoveIndex(
+        definition.chronometers,
+        index,
+        index + 1
+      ),
+    });
   };
 
   return (
@@ -111,7 +143,7 @@ export const TimelineBuilder = ({
         onClick={() => setCollapsed(!collapsed)}
       />
       <HelpText />
-      {definitions.map((d, idx) => (
+      {definition.chronometers.map((d, idx) => (
         <div key={idx} className="timeline-builder__slot">
           <TimeSlotBuilder
             definition={d}
@@ -129,11 +161,19 @@ export const TimelineBuilder = ({
             </Button>
             <Button
               primary
-              disabled={readonly || idx == definitions.length - 1}
+              disabled={readonly || idx == definition.chronometers.length - 1}
               onClick={() => moveDown(idx)}
             >
               <ChevronsDown />
               Move down
+            </Button>
+            <Button
+              primary
+              disabled={readonly}
+              onClick={() => duplicateDefinition(idx)}
+            >
+              <Copy />
+              Duplicate
             </Button>
             <Button
               primary
@@ -150,7 +190,13 @@ export const TimelineBuilder = ({
         primary
         disabled={readonly}
         onClick={() =>
-          setDefinitions([...definitions, buildDefaultDefinition()])
+          setDefinition({
+            ...definition,
+            chronometers: [
+              ...definition.chronometers,
+              buildDefaultChronometerDefinition(),
+            ],
+          })
         }
       >
         <Plus />

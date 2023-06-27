@@ -24,13 +24,16 @@
   },
   "dependencies": {
     "clsx": "^1.2.1",
+    "deep-equal": "^2.2.1",
     "lz-string": "^1.5.0",
+    "pojo-observer": "^1.1.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
     "style-inject": "^0.3.0"
   },
   "devDependencies": {
+    "@types/deep-equal": "^1.0.1",
     "@types/react": "^18.0.37",
     "@types/react-dom": "^18.0.11",
     "@types/style-inject": "^0.3.0",

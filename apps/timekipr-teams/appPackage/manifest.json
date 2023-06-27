@@ -15,7 +15,7 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "timekipr-${{TEAMSFX_ENV}}",
+        "short": "timekipr",
         "full": "Simple timekeeping app"
     },
     "description": {

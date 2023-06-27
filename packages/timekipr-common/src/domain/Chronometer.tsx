@@ -1,162 +1,169 @@
-import { ChronometerSnapshot } from "./ChronometerSnapshot";
-import { Duration } from "./Duration";
-import { DurationProps } from "./DurationProps";
-import { ChronometerAlertProps } from "./ChronometerAlertProps";
+import { Duration } from "./value_objects/Duration";
+import { ChronometerAlert } from "./ChronometerAlert";
+import { Option, None, Some } from "../functional";
+import { EventMapper } from "../utils";
 
-export interface ChronometerAlert {
-  remainingTime: Duration;
-  shown: boolean;
+export interface ChronometerProps {
+  name: string;
+  timeLimit: Duration;
+  alerts: ChronometerAlert[];
+  timeOutPassed: boolean;
+  startedAt: Option<Date>;
+  finishedAt: Option<Date>;
+  lastUpdatedAt: Option<Date>;
 }
 
+export type ChronometerOnAlertCallback = (
+  chrono: Chronometer,
+  remainingSeconds: number
+) => void;
+export type ChronometerOnFinishedCallback = (chrono: Chronometer) => void;
+
 export class Chronometer {
-  private _name: string;
-  private _elapsedTime: Duration;
-  private _timeLimit: Duration;
-  private _alerts: ChronometerAlert[];
-  private _timeOutPassed: boolean;
-  private _startedAt: Date | null;
-  private _finishedAt: Date | null;
+  private props: ChronometerProps;
 
-  onAlert: ((chrono: Chronometer, remainingSeconds: number) => void) | null;
-  onFinished: ((chrono: Chronometer) => void) | null;
+  private _onAlert: EventMapper<ChronometerOnAlertCallback>;
+  private _onFinished: EventMapper<ChronometerOnFinishedCallback>;
 
-  constructor(
-    name: string,
-    timeLimit: DurationProps,
-    alerts: ChronometerAlertProps[]
-  ) {
-    this._name = name;
-    this._elapsedTime = Duration.fromSeconds(0);
-    this._timeLimit = Duration.fromProps(timeLimit);
-    this._timeOutPassed = false;
-    this._startedAt = null;
-    this._finishedAt = null;
-    this._alerts = alerts.map((d) => ({
-      remainingTime: Duration.fromProps(d.remainingTime),
-      shown: false,
-    }));
+  private constructor(props: ChronometerProps) {
+    this.props = props;
 
-    this.onAlert = null;
-    this.onFinished = null;
+    this._onAlert = new EventMapper();
+    this._onFinished = new EventMapper();
   }
 
-  start() {
-    this._startedAt = new Date();
+  connectOnAlert(cb: ChronometerOnAlertCallback) {
+    this._onAlert.connect(cb);
+  }
+
+  connectOnFinished(cb: ChronometerOnFinishedCallback) {
+    this._onFinished.connect(cb);
+  }
+
+  static buildDefault(): Chronometer {
+    const props: ChronometerProps = {
+      name: "Unknown",
+      alerts: [],
+      finishedAt: None(),
+      startedAt: None(),
+      lastUpdatedAt: None(),
+      timeLimit: Duration.fromSeconds(0),
+      timeOutPassed: false,
+    };
+
+    return new Chronometer(props);
+  }
+
+  static buildFromProps(props: ChronometerProps): Chronometer {
+    return new Chronometer(props);
+  }
+
+  startChronometer() {
+    this.props.startedAt = Some(new Date());
   }
 
   finish() {
-    this._finishedAt = new Date();
-  }
-
-  get effectiveDeltaValue(): Duration {
-    if (!this.stopped && !this.timedOut) {
-      return Duration.fromSeconds(0);
-    }
-
-    return this.deltaValue;
+    this.props.finishedAt = Some(new Date());
   }
 
   get deltaValue(): Duration {
-    return Duration.fromSeconds(+this._elapsedTime - +this._timeLimit);
+    return this.elapsedTime.getDifference(this.props.timeLimit);
   }
 
   get timedOut(): boolean {
-    return +this._timeLimit > 0 && this._elapsedTime >= this._timeLimit;
+    return (
+      +this.props.timeLimit > 0 && this.elapsedTime >= this.props.timeLimit
+    );
   }
 
-  snapshot(): ChronometerSnapshot {
-    return {
-      name: this._name,
-      elapsedTimeSeconds: this._elapsedTime.seconds,
-      elapsedTimeHumanReadable: this._elapsedTime.toHumanReadableString(),
-      timeLimitHumanReadable: this._timeLimit.toHumanReadableString(),
-      progress:
-        this._timeLimit.seconds > 0
-          ? Math.floor(
-              (this._elapsedTime.seconds / this._timeLimit.seconds) * 100
-            )
-          : 0,
-      started: this.started,
-      stopped: this.stopped,
-      deltaValueSeconds: this.deltaValue.seconds,
-      timedOut: this.timedOut,
-      deltaValueHumanReadable: this.deltaValue.toHumanReadableString(),
-      alerts: this._alerts.map((a) => ({
-        remainingTimeSeconds: a.remainingTime.seconds,
-        shown: a.shown,
-      })),
-    };
+  get timeOutPassed(): boolean {
+    return this.props.timeOutPassed;
+  }
+
+  get alerts(): ChronometerAlert[] {
+    return this.props.alerts;
+  }
+
+  get startedAt(): Option<Date> {
+    return this.props.startedAt;
+  }
+
+  get finishedAt(): Option<Date> {
+    return this.props.finishedAt;
+  }
+
+  get lastUpdatedAt(): Option<Date> {
+    return this.props.lastUpdatedAt;
   }
 
   get name(): string {
-    return this._name;
+    return this.props.name;
   }
 
   get timeLimit(): Duration {
-    return this._timeLimit;
+    return this.props.timeLimit;
   }
 
   get elapsedTime(): Duration {
-    return this._elapsedTime;
+    if (this.props.startedAt.isSome()) {
+      const startedAt = this.props.startedAt.unwrap();
+      if (this.props.lastUpdatedAt.isSome()) {
+        const lastUpdated = this.props.lastUpdatedAt.unwrap();
+        return Duration.fromDates(startedAt, lastUpdated);
+      }
+    }
+
+    return Duration.zero();
   }
 
   get progress(): number {
-    return this._timeLimit.seconds > 0
-      ? Math.floor((this._elapsedTime.seconds / this._timeLimit.seconds) * 100)
+    return this.props.timeLimit.seconds > 0
+      ? Math.floor(
+          (this.elapsedTime.milliseconds / this.props.timeLimit.milliseconds) *
+            100
+        )
       : 0;
   }
 
   get started(): boolean {
-    return this._startedAt != null;
+    return this.props.startedAt.isSome();
   }
 
-  get stopped(): boolean {
-    return this._finishedAt != null;
+  get finished(): boolean {
+    return this.props.finishedAt.isSome();
   }
 
-  tick(seconds: number) {
-    if (!this.started || this.stopped) {
+  tick(now: Date) {
+    if (!this.started || this.finished) {
       return;
     }
 
-    this._elapsedTime.addSeconds(seconds);
+    this.props.lastUpdatedAt = Some(now);
 
     this.processAlerts();
-
-    if (this.timeOutPassed()) {
-      this.sendTimeOutNotification();
-    }
+    this.processTimeout();
   }
 
   processAlerts() {
-    const remainingTime = this._timeLimit.seconds - this._elapsedTime.seconds;
+    const remainingTime =
+      this.props.timeLimit.seconds - this.elapsedTime.seconds;
 
-    for (const alert of this._alerts) {
+    for (const alert of this.props.alerts) {
       if (!alert.shown && alert.remainingTime.seconds >= remainingTime) {
-        alert.shown = true;
+        alert.setShown(true);
 
-        if (this.onAlert) {
-          this.onAlert(this, alert.remainingTime.seconds);
-        }
+        this._onAlert.send(this, alert.remainingTime.seconds);
       }
     }
   }
 
-  timeOutPassed(): boolean {
+  processTimeout() {
     if (
-      !this._timeOutPassed &&
-      this._elapsedTime.seconds == this._timeLimit.seconds
+      !this.props.timeOutPassed &&
+      this.elapsedTime.seconds >= this.props.timeLimit.seconds
     ) {
-      this._timeOutPassed = true;
-      return true;
-    }
-
-    return false;
-  }
-
-  sendTimeOutNotification() {
-    if (this.onFinished) {
-      this.onFinished(this);
+      this.props.timeOutPassed = true;
+      this._onFinished.send(this);
     }
   }
 }

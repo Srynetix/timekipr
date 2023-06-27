@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Clipboard, Share2, Upload } from "react-feather";
-import { Button } from "./Button";
-import { CollapsibleTitle } from "./CollapsibleTitle";
-import { InlineHelp } from "./InlineHelp";
+import { CollapsibleTitle } from "../CollapsibleTitle";
+import { InlineHelp } from "../InlineHelp";
+import { Button } from "../Button";
+import { loadHash } from "../../utils";
 
 export interface Props {
   hash: string;
@@ -13,10 +14,12 @@ export interface Props {
 export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
   const [localHash, setLocalHash] = useState(hash);
   const [collapsed, setCollapsed] = useState(true);
+  const [previousHash, setPreviousHash] = useState(hash);
 
-  useEffect(() => {
+  if (previousHash !== hash) {
+    setPreviousHash(hash);
     setLocalHash(hash);
-  }, [hash]);
+  }
 
   return (
     <div className={`hash-setter ${collapsed ? "hash-setter--collapsed" : ""}`}>
@@ -74,6 +77,9 @@ export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
           <Upload />
           Load
         </Button>
+      </div>
+      <div className="hash-setter__debug">
+        <code>{JSON.stringify(loadHash(localHash))}</code>
       </div>
     </div>
   );
