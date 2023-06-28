@@ -65,7 +65,7 @@ function App() {
 
   return (
     <div className="app">
-      <AppHeader animated={playing} />
+      {!chronometerView && <AppHeader animated={playing} />}
       {!chronometerView && (
         <>
           <TimelineBuilder

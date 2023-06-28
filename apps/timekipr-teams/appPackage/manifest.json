@@ -47,8 +47,8 @@
         {
             "entityId": "index0",
             "name": "Personal Tab",
-            "contentUrl": "${{TAB_ENDPOINT}}",
-            "websiteUrl": "${{TAB_ENDPOINT}}",
+            "contentUrl": "${{TAB_ENDPOINT}}/",
+            "websiteUrl": "${{TAB_ENDPOINT}}/",
             "scopes": [
                 "personal"
             ]

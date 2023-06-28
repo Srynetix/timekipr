@@ -1,4 +1,4 @@
-import { Box, CheckCircle, PlayCircle, RefreshCw } from "react-feather";
+import { Box, CheckCircle, Clock, PlayCircle, RefreshCw } from "react-feather";
 import { Button } from "./Button";
 import clsx from "clsx";
 import { Duration } from "../domain/value_objects/Duration";
@@ -26,6 +26,10 @@ export const ChronometerView = ({
 
   return (
     <div className="chronometer-view">
+      <div className="chronometer-view__title">
+        <Clock />
+        Chronometer
+      </div>
       <div className="chronometer-view__chronometer">
         <div className="chronometer-view__chronometer__name">
           {currentChronometer.name} (
@@ -97,7 +101,7 @@ export const ChronometerView = ({
           <PlayCircle /> Play
         </Button>
 
-        <Button primary onClick={onReset} title="Reset timeline">
+        <Button primary disabled={!timelineView.started} onClick={onReset} title="Reset timeline">
           <RefreshCw /> Reset
         </Button>
       </div>

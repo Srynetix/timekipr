@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChronometerTimelineDefinition,
   ChronometerTimelineMapper,
@@ -86,15 +86,15 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
     snapshotTimeline(timelineObject.current)
   );
 
-  const onTimelineUpdate = (timelineObject: ChronometerTimeline) => {
-    saveToStorage(timelineObject);
-  };
+  const updateTimeline = () => {
+    setTimelineView(snapshotTimeline(timelineObject.current));
+    saveToStorage(timelineObject.current);
+  }
 
   const recreateTimeline = () => {
     const obj = buildTimelineFromDefinition(definition);
     timelineObject.current = obj;
-    setTimelineView(snapshotTimeline(obj));
-    onTimelineUpdate(obj);
+    updateTimeline();
   };
 
   const resetTimeline = () => {
@@ -113,10 +113,13 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
 
   const tick = () => {
     timelineObject.current.tick(new Date());
-    setTimelineView(snapshotTimeline(timelineObject.current));
-    onTimelineUpdate(timelineObject.current);
+    updateTimeline();
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
+  // This is safe to do, tick() is using timelineObject which is a ref.
+  // The linter does not see it because it's built using useStableRef instead of useRef.
+  // https://github.com/facebook/react/issues/23392
   useEffect(() => {
     const interval = setInterval(() => {
       tick();
@@ -126,6 +129,7 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
       clearInterval(interval);
     };
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   if (!deepEqual(previousDefinition, definition)) {
     setPreviousDefinition(definition);
