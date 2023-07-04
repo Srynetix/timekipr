@@ -4,7 +4,7 @@ import { Timeline } from "./components/Timeline";
 
 import { HashSetter } from "./components/builders/HashSetter";
 import { AppHeader } from "./components/AppHeader";
-import { buildHash, loadHash } from "./utils";
+import { buildHash, loadHash } from "./utils/hash";
 import { ChronometerTimelineDefinition } from "./domain/mappers/ChronometerTimelineMapper";
 import { buildDefaultTimelineDefinition } from "./domain/builders";
 import { useTimeline } from "./hooks/useTimeline";
@@ -31,11 +31,19 @@ function App() {
     setPlaying(false);
   };
 
-  if (timelineState.timelineView.started && !timelineState.timelineView.finished && !playing) {
+  if (
+    timelineState.timelineView.started &&
+    !timelineState.timelineView.finished &&
+    !playing
+  ) {
     setPlaying(true);
   }
 
-  if (timelineState.timelineView.started && timelineState.timelineView.finished && playing) {
+  if (
+    timelineState.timelineView.started &&
+    timelineState.timelineView.finished &&
+    playing
+  ) {
     setPlaying(false);
   }
 

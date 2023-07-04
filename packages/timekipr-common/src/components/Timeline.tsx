@@ -127,7 +127,12 @@ export const Timeline = ({
           <PlayCircle /> Play
         </Button>
 
-        <Button primary disabled={!timelineView.started} onClick={onReset} title="Reset timeline">
+        <Button
+          primary
+          disabled={!timelineView.started}
+          onClick={onReset}
+          title="Reset timeline"
+        >
           <RefreshCw /> Reset
         </Button>
       </div>

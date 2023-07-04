@@ -3,7 +3,7 @@ import { Clipboard, Share2, Upload } from "react-feather";
 import { CollapsibleTitle } from "../CollapsibleTitle";
 import { InlineHelp } from "../InlineHelp";
 import { Button } from "../Button";
-import { loadHash } from "../../utils";
+import { loadHash } from "../../utils/hash";
 
 export interface Props {
   hash: string;

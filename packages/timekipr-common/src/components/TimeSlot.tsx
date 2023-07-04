@@ -1,7 +1,7 @@
 import { AlertCircle, CheckCircle } from "react-feather";
 import clsx from "clsx";
 import { Button } from "./Button";
-import { immutableArraySort } from "../utils";
+import { immutableArraySort } from "../utils/immutableCollections";
 import { Duration } from "../domain/value_objects/Duration";
 import { ChronometerViewDTO } from "../domain/mappers/ChronometerMapper";
 

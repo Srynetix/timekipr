@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import deepEqual from "deep-equal";
 import {
   ChronometerTimelineDefinition,
   ChronometerTimelineMapper,
@@ -9,8 +10,8 @@ import { ChronometerAlert } from "../domain/ChronometerAlert";
 import { ChronometerAlertDefinition } from "../domain/mappers/ChronometerAlertMapper";
 import { Duration } from "../domain/value_objects/Duration";
 import { Chronometer } from "../domain/Chronometer";
-import { Option, None, Some, useStableRef } from "../functional";
-import deepEqual from "deep-equal";
+import { None, Option, Some } from "../utils/option";
+import { useStableRef } from "../utils/useStableRef";
 
 const buildAlertFromDefinition = (
   definition: ChronometerAlertDefinition
@@ -89,7 +90,7 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
   const updateTimeline = () => {
     setTimelineView(snapshotTimeline(timelineObject.current));
     saveToStorage(timelineObject.current);
-  }
+  };
 
   const recreateTimeline = () => {
     const obj = buildTimelineFromDefinition(definition);

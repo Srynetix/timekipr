@@ -1,6 +1,13 @@
 import { TimeSlotBuilder } from "./TimeSlotBuilder";
 import { useState } from "react";
-import { Box, ChevronsDown, ChevronsUp, Copy, Plus, Trash } from "react-feather";
+import {
+  Box,
+  ChevronsDown,
+  ChevronsUp,
+  Copy,
+  Plus,
+  Trash,
+} from "react-feather";
 import { Button } from "../Button";
 import { CollapsibleTitle } from "../CollapsibleTitle";
 import {
@@ -8,7 +15,7 @@ import {
   immutableArrayInsertN,
   immutableArrayMoveIndex,
   immutableArrayRemove,
-} from "../../utils";
+} from "../../utils/immutableCollections";
 import { InlineHelp } from "../InlineHelp";
 import { ChronometerDefinition } from "../../domain/mappers/ChronometerMapper";
 import { ChronometerTimelineDefinition } from "../../domain/mappers/ChronometerTimelineMapper";
@@ -59,7 +66,7 @@ const HelpText = () => (
       <Button primary inline>
         <Copy />
         Duplicate
-      </Button>{ " "}
+      </Button>{" "}
       button, and remove slots using the{" "}
       <Button primary inline>
         <Trash />
@@ -94,9 +101,12 @@ export const TimelineBuilder = ({
   const duplicateDefinition = (index: number) => {
     setDefinition({
       ...definition,
-      chronometers: immutableArrayInsertN(definition.chronometers, index, [{...definition.chronometers[index]}, {...definition.chronometers[index]}]),
+      chronometers: immutableArrayInsertN(definition.chronometers, index, [
+        { ...definition.chronometers[index] },
+        { ...definition.chronometers[index] },
+      ]),
     });
-  }
+  };
 
   const moveUp = (index: number) => {
     if (index == 0) {

@@ -1,4 +1,4 @@
-import { Option } from "../../functional";
+import { Option } from "../../utils/option";
 import { Chronometer } from "../Chronometer";
 import {
   Duration,

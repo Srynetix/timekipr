@@ -1,7 +1,7 @@
 import { Duration } from "./value_objects/Duration";
 import { ChronometerAlert } from "./ChronometerAlert";
-import { Option, None, Some } from "../functional";
-import { EventMapper } from "../utils";
+import { Option, None, Some } from "../utils/option";
+import { EventMapper } from "../utils/EventMapper";
 
 export interface ChronometerProps {
   name: string;

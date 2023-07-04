@@ -1,7 +1,7 @@
 import { SHOW_NOTIFICATIONS } from "../constants";
 import { Chronometer } from "./Chronometer";
 import { Duration } from "./value_objects/Duration";
-import { Option } from "../functional";
+import { Option } from "../utils/option";
 
 export interface ChronometerTimelineProps {
   chronometers: Chronometer[];
