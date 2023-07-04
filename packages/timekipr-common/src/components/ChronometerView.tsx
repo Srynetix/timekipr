@@ -1,11 +1,11 @@
-import { Box, CheckCircle, PlayCircle, RefreshCw } from "react-feather";
+import { Box, CheckCircle, Clock, PlayCircle, RefreshCw } from "react-feather";
 import { Button } from "./Button";
 import clsx from "clsx";
-import { ChronometerTimelineSnapshot } from "../domain/ChronometerTimelineSnapshot";
-import { Duration } from "../domain/Duration";
+import { Duration } from "../domain/value_objects/Duration";
+import { ChronometerTimelineViewDTO } from "../domain/mappers/ChronometerTimelineMapper";
 
 export interface Props {
-  timeline: ChronometerTimelineSnapshot;
+  timelineView: ChronometerTimelineViewDTO;
   switchToTimeline: () => void;
   onCheck: () => void;
   onPlay: () => void;
@@ -14,58 +14,61 @@ export interface Props {
 
 export const ChronometerView = ({
   switchToTimeline,
-  timeline,
+  timelineView,
   onCheck,
   onPlay,
   onReset,
 }: Props) => {
-  const currentChronometer = timeline.currentChronometer;
+  const currentChronometer = timelineView.currentChronometer;
   if (currentChronometer == null) {
     return null;
   }
 
   return (
     <div className="chronometer-view">
+      <div className="chronometer-view__title">
+        <Clock />
+        Chronometer
+      </div>
       <div className="chronometer-view__chronometer">
         <div className="chronometer-view__chronometer__name">
-          {currentChronometer.name} ({currentChronometer.timeLimitHumanReadable}
+          {currentChronometer.name} (
+          {Duration.fromProps(
+            currentChronometer.timeLimit
+          ).toHumanReadableString()}
           )
         </div>
         <div
           className={clsx("chronometer-view__chronometer__time", {
             "chronometer-view__chronometer__time--positive":
-              currentChronometer.deltaValueSeconds >= 0,
+              Duration.fromProps(currentChronometer.deltaValue).seconds >= 0,
             "chronometer-view__chronometer__time--negative":
-              currentChronometer.deltaValueSeconds < 0,
+              Duration.fromProps(currentChronometer.deltaValue).seconds < 0,
           })}
         >
-          {currentChronometer.deltaValueHumanReadable}
+          {Duration.fromProps(
+            currentChronometer.deltaValue
+          ).toHumanReadableString()}
         </div>
-        {timeline.started && (
+        {timelineView.started && (
           <div className="chronometer-view__overall-counter">
             <span className="chronometer-view__overall-counter__elapsed">
-              {Duration.fromSeconds(
-                timeline.elapsedTimeSeconds
-              ).toHumanReadableString()}
+              {timelineView.totalElapsedTime.humanReadableString}
             </span>
             /
             <span className="chronometer-view__overall-counter__total">
-              {Duration.fromSeconds(
-                timeline.totalTimeSeconds
-              ).toHumanReadableString()}
+              {timelineView.totalTimeLimit.humanReadableString}
             </span>
             (
             <span
               className={clsx("chronometer-view__overall-counter__delta", {
                 "chronometer-view__overall-counter__delta--positive":
-                  timeline.deltaValueSeconds > 0,
+                  timelineView.totalDeltaValue.seconds > 0,
                 "chronometer-view__overall-counter__delta--negative":
-                  timeline.deltaValueSeconds <= 0,
+                  timelineView.totalDeltaValue.seconds <= 0,
               })}
             >
-              {Duration.fromSeconds(
-                timeline.deltaValueSeconds
-              ).toHumanReadableString()}
+              {timelineView.totalDeltaValue.humanReadableString}
             </span>
             )
           </div>
@@ -73,7 +76,7 @@ export const ChronometerView = ({
         <Button
           primary
           className="chronometer-view__chronometer__check"
-          disabled={currentChronometer.stopped || !currentChronometer.started}
+          disabled={currentChronometer.finished || !currentChronometer.started}
           onClick={() => onCheck()}
           title="Mark as done"
         >
@@ -88,9 +91,9 @@ export const ChronometerView = ({
         <Button
           primary
           disabled={
-            timeline.finished ||
-            timeline.started ||
-            timeline.chronometers.length == 0
+            timelineView.finished ||
+            timelineView.started ||
+            timelineView.chronometers.length == 0
           }
           onClick={onPlay}
           title="Start timeline"
@@ -98,7 +101,12 @@ export const ChronometerView = ({
           <PlayCircle /> Play
         </Button>
 
-        <Button primary onClick={onReset} title="Reset timeline">
+        <Button
+          primary
+          disabled={!timelineView.started}
+          onClick={onReset}
+          title="Reset timeline"
+        >
           <RefreshCw /> Reset
         </Button>
       </div>

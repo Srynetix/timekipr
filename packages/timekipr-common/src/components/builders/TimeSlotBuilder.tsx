@@ -1,19 +1,19 @@
-import { ChronometerTimelineProps } from "../domain/ChronometerTimelineProps";
-import { DurationProps } from "../domain/DurationProps";
 import { DurationPicker } from "./DurationPicker";
 import { AlertBuilder } from "./AlertBuilder";
-import { ChronometerAlertProps } from "../domain/ChronometerAlertProps";
+import { ChronometerDefinition } from "../../domain/mappers/ChronometerMapper";
+import { DurationProps } from "../../domain/value_objects/Duration";
+import { ChronometerAlertDefinition } from "../../domain/mappers/ChronometerAlertMapper";
 
 export interface Props {
-  definition: ChronometerTimelineProps;
-  onChange: (definition: ChronometerTimelineProps) => void;
+  definition: ChronometerDefinition;
+  onChange: (definition: ChronometerDefinition) => void;
   readonly: boolean;
 }
 
 export const TimeSlotBuilder = ({ definition, onChange, readonly }: Props) => {
   const changeField = (
-    fieldName: keyof ChronometerTimelineProps,
-    fieldValue: string | DurationProps | ChronometerAlertProps[]
+    fieldName: keyof ChronometerDefinition,
+    fieldValue: string | DurationProps | ChronometerAlertDefinition[]
   ) => {
     onChange({ ...definition, [fieldName]: fieldValue });
   };

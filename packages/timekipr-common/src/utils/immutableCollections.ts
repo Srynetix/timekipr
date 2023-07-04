@@ -6,6 +6,18 @@ export function immutableArrayInsert<T>(
   return [...array.slice(0, index), element, ...array.slice(index + 1)];
 }
 
+export function immutableArrayInsertN<T>(
+  array: Array<T>,
+  index: number,
+  elements: T[]
+): Array<T> {
+  return [
+    ...array.slice(0, index),
+    ...elements,
+    ...array.slice(index + elements.length),
+  ];
+}
+
 export function immutableArrayRemove<T>(
   array: Array<T>,
   index: number

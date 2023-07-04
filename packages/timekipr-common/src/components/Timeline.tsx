@@ -1,20 +1,19 @@
 import { Box, Clock, PlayCircle, RefreshCw, Share2 } from "react-feather";
-import { ChronometerTimelineProps } from "../domain/ChronometerTimelineProps";
-import { useTimeline } from "../hooks/useTimeline";
 import { TimeSlot } from "./TimeSlot";
 import { Button } from "./Button";
 import clsx from "clsx";
 import { ChronometerView } from "./ChronometerView";
 import { InlineHelp } from "./InlineHelp";
 import { SHOW_NOTIFICATIONS } from "../constants";
-import { Duration } from "../domain/Duration";
+import { ChronometerTimelineViewDTO } from "../domain/mappers/ChronometerTimelineMapper";
 
 export interface Props {
-  definitions: ChronometerTimelineProps[];
+  timelineView: ChronometerTimelineViewDTO;
   chronometerView: boolean;
   setChronometerView: (value: boolean) => void;
   onPlay: () => void;
   onReset: () => void;
+  onCheck: () => void;
 }
 
 const HelpText = () => (
@@ -40,42 +39,29 @@ const HelpText = () => (
 );
 
 export const Timeline = ({
-  definitions,
+  timelineView,
   chronometerView,
   setChronometerView,
   onPlay,
   onReset,
+  onCheck,
 }: Props) => {
-  const {
-    startTimeline,
-    markCurrentChronometerAsDone,
-    resetTimeline: resetTimelineInner,
-    timeline,
-  } = useTimeline(definitions);
-
   const onLocalPlay = () => {
     if (SHOW_NOTIFICATIONS && Notification.permission !== "denied") {
       Notification.requestPermission();
     }
-
-    startTimeline();
     onPlay();
   };
 
-  const resetTimeline = () => {
-    resetTimelineInner();
-    onReset();
-  };
-
-  if (chronometerView && timeline.currentChronometer != null) {
+  if (chronometerView && timelineView.currentChronometer != null) {
     return (
       <div className="timeline">
         <ChronometerView
           switchToTimeline={() => setChronometerView(false)}
-          timeline={timeline}
-          onCheck={() => markCurrentChronometerAsDone()}
+          timelineView={timelineView}
+          onCheck={onCheck}
           onPlay={onLocalPlay}
-          onReset={resetTimeline}
+          onReset={onReset}
         />
       </div>
     );
@@ -87,49 +73,39 @@ export const Timeline = ({
         <Clock />
         Timeline
       </div>
-      {timeline.chronometers.length == 0 && <HelpText />}
-      {timeline.chronometers.length > 0 && (
+      {timelineView.chronometers.length == 0 && <HelpText />}
+      {timelineView.chronometers.length > 0 && (
         <div className="timeline__slots">
-          {timeline.chronometers.map((chronometer, idx) => (
-            <TimeSlot
-              key={idx}
-              chronometer={chronometer}
-              onCheck={() => markCurrentChronometerAsDone()}
-            />
+          {timelineView.chronometers.map((chronometer, idx) => (
+            <TimeSlot key={idx} chronometer={chronometer} onCheck={onCheck} />
           ))}
         </div>
       )}
-      {timeline.started && (
+      {timelineView.started && (
         <div className="timeline__overall-counter">
           <span className="timeline__overall-counter__elapsed">
-            {Duration.fromSeconds(
-              timeline.elapsedTimeSeconds
-            ).toHumanReadableString()}
+            {timelineView.totalElapsedTime.humanReadableString}
           </span>
           /
           <span className="timeline__overall-counter__total">
-            {Duration.fromSeconds(
-              timeline.totalTimeSeconds
-            ).toHumanReadableString()}
+            {timelineView.totalTimeLimit.humanReadableString}
           </span>
           (
           <span
             className={clsx("timeline__overall-counter__delta", {
               "timeline__overall-counter__delta--positive":
-                timeline.deltaValueSeconds > 0,
+                timelineView.totalDeltaValue.seconds > 0,
               "timeline__overall-counter__delta--negative":
-                timeline.deltaValueSeconds <= 0,
+                timelineView.totalDeltaValue.seconds <= 0,
             })}
           >
-            {Duration.fromSeconds(
-              timeline.deltaValueSeconds
-            ).toHumanReadableString()}
+            {timelineView.totalDeltaValue.humanReadableString}
           </span>
           )
         </div>
       )}
       <div className="timeline__buttons">
-        {!!timeline.currentChronometer && (
+        {!!timelineView.currentChronometer && (
           <Button
             primary
             onClick={() => setChronometerView(true)}
@@ -141,9 +117,9 @@ export const Timeline = ({
         <Button
           primary
           disabled={
-            timeline.finished ||
-            timeline.started ||
-            timeline.chronometers.length == 0
+            timelineView.finished ||
+            timelineView.started ||
+            timelineView.chronometers.length == 0
           }
           onClick={onLocalPlay}
           title="Start timeline"
@@ -151,7 +127,12 @@ export const Timeline = ({
           <PlayCircle /> Play
         </Button>
 
-        <Button primary onClick={resetTimeline} title="Reset timeline">
+        <Button
+          primary
+          disabled={!timelineView.started}
+          onClick={onReset}
+          title="Reset timeline"
+        >
           <RefreshCw /> Reset
         </Button>
       </div>

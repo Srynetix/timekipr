@@ -1,5 +1,4 @@
-import { Duration } from "../domain/Duration";
-import { DurationProps } from "../domain/DurationProps";
+import { Duration, DurationProps } from "../../domain/value_objects/Duration";
 
 export interface Props {
   value: DurationProps;

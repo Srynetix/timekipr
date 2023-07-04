@@ -1,12 +1,12 @@
 import { AlertCircle, CheckCircle } from "react-feather";
-import { ChronometerSnapshot } from "../domain/ChronometerSnapshot";
 import clsx from "clsx";
 import { Button } from "./Button";
-import { immutableArraySort } from "../utils";
-import { Duration } from "../domain/Duration";
+import { immutableArraySort } from "../utils/immutableCollections";
+import { Duration } from "../domain/value_objects/Duration";
+import { ChronometerViewDTO } from "../domain/mappers/ChronometerMapper";
 
 export interface Props {
-  chronometer: ChronometerSnapshot;
+  chronometer: ChronometerViewDTO;
   onCheck: () => void;
 }
 
@@ -14,9 +14,9 @@ export const TimeSlot = ({ chronometer, onCheck }: Props) => {
   return (
     <div
       className={`timeslot ${
-        chronometer.stopped
+        chronometer.finished
           ? "timeslot--finished"
-          : chronometer.elapsedTimeSeconds > 0
+          : Duration.fromProps(chronometer.elapsedTime).seconds > 0
           ? "timeslot--progress"
           : ""
       }`}
@@ -26,27 +26,29 @@ export const TimeSlot = ({ chronometer, onCheck }: Props) => {
           {chronometer.name || <i>no name</i>}
         </div>
         <div className="timeslot__title__time-limit">
-          ({chronometer.timeLimitHumanReadable})
+          ({Duration.fromProps(chronometer.timeLimit).toHumanReadableString()})
         </div>
       </div>
       <div className="timeslot__progress">
         <progress
           className="timeslot__progress__bar"
-          value={chronometer.progress}
+          value={chronometer.progressPercentage}
           max={100}
         />
         <div className="timeslot__progress__alerts">
           {immutableArraySort(
             chronometer.alerts,
-            (a, b) => b.remainingTimeSeconds - a.remainingTimeSeconds
+            (a, b) =>
+              Duration.fromProps(b.remainingTime).seconds -
+              Duration.fromProps(a.remainingTime).seconds
           ).map((a) => (
             <div
-              key={a.remainingTimeSeconds}
+              key={Duration.fromProps(a.remainingTime).seconds}
               className={clsx("timeslot__progress__alerts__alert", {
                 "timeslot__progress__alerts__alert--shown": a.shown,
               })}
-              title={Duration.fromSeconds(
-                a.remainingTimeSeconds
+              title={Duration.fromProps(
+                a.remainingTime
               ).toHumanReadableString()}
             >
               <AlertCircle />
@@ -56,18 +58,20 @@ export const TimeSlot = ({ chronometer, onCheck }: Props) => {
       </div>
       <div
         className={clsx("timeslot__delta-value", {
-          "timeslot__delta-value--positive": chronometer.deltaValueSeconds > 0,
-          "timeslot__delta-value--negative": chronometer.deltaValueSeconds <= 0,
+          "timeslot__delta-value--positive":
+            Duration.fromProps(chronometer.deltaValue).seconds > 0,
+          "timeslot__delta-value--negative":
+            Duration.fromProps(chronometer.deltaValue).seconds <= 0,
         })}
       >
-        {chronometer.elapsedTimeSeconds > 0
-          ? chronometer.elapsedTimeHumanReadable
+        {Duration.fromProps(chronometer.elapsedTime).seconds > 0
+          ? Duration.fromProps(chronometer.elapsedTime).toHumanReadableString()
           : "--"}
       </div>
       <Button
         primary
         className="timeslot__check"
-        disabled={chronometer.stopped || !chronometer.started}
+        disabled={chronometer.finished || !chronometer.started}
         onClick={() => onCheck()}
         title="Mark as done"
       >
