@@ -1,39 +1,26 @@
-import { useEffect, useState } from "react";
-import deepEqual from "deep-equal";
+import { useEffect, useRef, useState } from "react";
 import {
   ChronometerTimelineDefinition,
   ChronometerTimelineMapper,
+  ChronometerTimelineViewDTO,
 } from "../domain/mappers/ChronometerTimelineMapper";
 import { ChronometerTimeline } from "../domain/ChronometerTimeline";
-import { ChronometerDefinition } from "../domain/mappers/ChronometerMapper";
-import { ChronometerAlert } from "../domain/ChronometerAlert";
-import { ChronometerAlertDefinition } from "../domain/mappers/ChronometerAlertMapper";
-import { Duration } from "../domain/value_objects/Duration";
-import { Chronometer } from "../domain/Chronometer";
-import { None, Option, Some } from "../utils/option";
+import { Option } from "../utils/option";
 import { useStableRef } from "../utils/useStableRef";
+import { buildHash, loadHash } from "../utils/hash";
+import { buildDefaultTimelineDefinition } from "../domain/builders";
+import deepEqual from "deep-equal";
 
-const buildAlertFromDefinition = (
-  definition: ChronometerAlertDefinition
-): ChronometerAlert => {
-  return ChronometerAlert.buildFromProps({
-    remainingTime: Duration.fromProps(definition.remainingTime),
-    shown: false,
-  });
+// Definitions
+
+const loadDefinitionFromHash = (): Option<ChronometerTimelineDefinition> => {
+  return Option.fromNullable(
+    loadHash<ChronometerTimelineDefinition>(window.location.hash.slice(1))
+  );
 };
 
-const buildChronometerFromDefinition = (
-  definition: ChronometerDefinition
-): Chronometer => {
-  return Chronometer.buildFromProps({
-    alerts: definition.alerts.map(buildAlertFromDefinition),
-    finishedAt: None(),
-    startedAt: None(),
-    lastUpdatedAt: None(),
-    timeLimit: Duration.fromProps(definition.timeLimit),
-    name: definition.name,
-    timeOutPassed: false,
-  });
+const loadDefinition = (): ChronometerTimelineDefinition => {
+  return loadDefinitionFromHash().unwrapOrElse(buildDefaultTimelineDefinition);
 };
 
 const buildTimelineFromDefinition = (
@@ -41,35 +28,41 @@ const buildTimelineFromDefinition = (
   fromStorage?: boolean
 ): ChronometerTimeline => {
   if (fromStorage) {
-    const value = loadFromStorage();
+    const hash = buildHash(definition);
+    const value = loadTimelineFromStorage(hash);
     if (value.isSome()) {
       return value.unwrap();
     }
   }
 
-  return ChronometerTimeline.buildFromProps({
-    chronometers: definition.chronometers.map(buildChronometerFromDefinition),
-    currentChronometerIndex: 0,
-    started: false,
-  });
+  const mapper = new ChronometerTimelineMapper();
+  return mapper.fromDefinition(definition);
 };
 
-const saveToStorage = (chronometerTimeline: ChronometerTimeline) => {
+// Timeline data
+
+const saveTimelineToStorage = (
+  hash: string,
+  chronometerTimeline: ChronometerTimeline
+) => {
   const mapper = new ChronometerTimelineMapper();
-  localStorage.setItem(
-    "lastTimeline",
-    JSON.stringify(mapper.toStorage(chronometerTimeline))
+  const data = JSON.stringify(mapper.toStorage(chronometerTimeline));
+  const key = `last-timeline${hash}`;
+
+  console.log("[useTimeline] saveTimelineToStorage", key, data);
+
+  localStorage.setItem(key, data);
+};
+
+const loadTimelineFromStorage = (hash: string): Option<ChronometerTimeline> => {
+  const key = `last-timeline${hash}`;
+  const mapper = new ChronometerTimelineMapper();
+
+  console.log("[useTimeline] loadTimelineFromStorage", key);
+
+  return Option.fromNullable(localStorage.getItem(key)).map((item) =>
+    mapper.fromStorage(JSON.parse(item))
   );
-};
-
-const loadFromStorage = (): Option<ChronometerTimeline> => {
-  const mapper = new ChronometerTimelineMapper();
-  const item = localStorage.getItem("lastTimeline");
-  if (item != null) {
-    return Some(mapper.fromStorage(JSON.parse(item)));
-  } else {
-    return None();
-  }
 };
 
 const chronometerTimelineMapper = new ChronometerTimelineMapper();
@@ -78,28 +71,52 @@ const snapshotTimeline = (obj: ChronometerTimeline) => {
   return chronometerTimelineMapper.toView(obj);
 };
 
-export const useTimeline = (definition: ChronometerTimelineDefinition) => {
+export const useTimeline = () => {
+  const lastTimelineSnapshot = useRef<ChronometerTimelineViewDTO | null>(null);
+  const [timelineDefinition, setTimelineDefinition] = useState(() => {
+    const data = loadDefinition();
+    window.location.hash = buildHash(data);
+    return data;
+  });
+
   const timelineObject = useStableRef(() =>
-    buildTimelineFromDefinition(definition, true)
-  );
-  const [previousDefinition, setPreviousDefinition] = useState(definition);
-  const [timelineView, setTimelineView] = useState(() =>
-    snapshotTimeline(timelineObject.current)
+    buildTimelineFromDefinition(timelineDefinition, true)
   );
 
   const updateTimeline = () => {
-    setTimelineView(snapshotTimeline(timelineObject.current));
-    saveToStorage(timelineObject.current);
+    const newSnapshot = snapshotTimeline(timelineObject.current);
+    if (!deepEqual(newSnapshot, lastTimelineSnapshot.current)) {
+      lastTimelineSnapshot.current = newSnapshot;
+      setTimelineView(newSnapshot);
+
+      if (timelineObject.current.started) {
+        const hash = buildHash(timelineDefinition);
+        saveTimelineToStorage(hash, timelineObject.current);
+      }
+    }
   };
 
-  const recreateTimeline = () => {
+  const recreateTimeline = (definition: ChronometerTimelineDefinition) => {
     const obj = buildTimelineFromDefinition(definition);
     timelineObject.current = obj;
     updateTimeline();
   };
 
+  const setTimelineDefinitionWrapper = (
+    value: ChronometerTimelineDefinition
+  ) => {
+    console.log("[useTimeline] setTimelineDefinitionWrapper", value);
+    window.location.hash = buildHash(value);
+    setTimelineDefinition(value);
+    recreateTimeline(value);
+  };
+
+  const [timelineView, setTimelineView] = useState(() =>
+    snapshotTimeline(timelineObject.current)
+  );
+
   const resetTimeline = () => {
-    recreateTimeline();
+    recreateTimeline(timelineDefinition);
   };
 
   const startTimeline = () => {
@@ -108,6 +125,10 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
   };
 
   const markCurrentChronometerAsDone = () => {
+    console.log(
+      "[useTimeline] markCurrentChronometerAsDone",
+      timelineObject.current.currentChronometer
+    );
     timelineObject.current.currentChronometer.unwrap().finish();
     tick();
   };
@@ -132,13 +153,13 @@ export const useTimeline = (definition: ChronometerTimelineDefinition) => {
   }, []);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  if (!deepEqual(previousDefinition, definition)) {
-    setPreviousDefinition(definition);
-    recreateTimeline();
-  }
-
   return {
-    state: { timelineView },
-    commands: { startTimeline, resetTimeline, markCurrentChronometerAsDone },
+    state: { timelineView, timelineDefinition },
+    commands: {
+      startTimeline,
+      resetTimeline,
+      markCurrentChronometerAsDone,
+      setTimelineDefinition: setTimelineDefinitionWrapper,
+    },
   };
 };

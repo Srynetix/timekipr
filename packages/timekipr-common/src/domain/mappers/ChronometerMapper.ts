@@ -1,4 +1,4 @@
-import { Option } from "../../utils/option";
+import { None, Option } from "../../utils/option";
 import { Chronometer } from "../Chronometer";
 import {
   Duration,
@@ -52,6 +52,18 @@ export class ChronometerMapper {
 
   constructor(alertMapper?: ChronometerAlertMapper) {
     this.alertMapper = alertMapper ?? new ChronometerAlertMapper();
+  }
+
+  fromDefinition(definition: ChronometerDefinition): Chronometer {
+    return Chronometer.buildFromProps({
+      alerts: definition.alerts.map((a) => this.alertMapper.fromDefinition(a)),
+      finishedAt: None(),
+      startedAt: None(),
+      lastUpdatedAt: None(),
+      timeLimit: Duration.fromProps(definition.timeLimit),
+      name: definition.name,
+      timeOutPassed: false,
+    });
   }
 
   toStorage(chronometer: Chronometer): ChronometerStorageDTO {

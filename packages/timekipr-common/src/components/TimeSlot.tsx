@@ -11,12 +11,20 @@ export interface Props {
 }
 
 export const TimeSlot = ({ chronometer, onCheck }: Props) => {
+  const deltaValueSeconds = Duration.fromProps(chronometer.deltaValue).seconds;
+  const elapsedTimeSeconds = Duration.fromProps(
+    chronometer.elapsedTime
+  ).seconds;
+  const elapsedTimeHumanReadable = Duration.fromProps(
+    chronometer.elapsedTime
+  ).toHumanReadableString();
+
   return (
     <div
       className={`timeslot ${
         chronometer.finished
           ? "timeslot--finished"
-          : Duration.fromProps(chronometer.elapsedTime).seconds > 0
+          : elapsedTimeSeconds > 0
           ? "timeslot--progress"
           : ""
       }`}
@@ -58,15 +66,12 @@ export const TimeSlot = ({ chronometer, onCheck }: Props) => {
       </div>
       <div
         className={clsx("timeslot__delta-value", {
-          "timeslot__delta-value--positive":
-            Duration.fromProps(chronometer.deltaValue).seconds > 0,
-          "timeslot__delta-value--negative":
-            Duration.fromProps(chronometer.deltaValue).seconds <= 0,
+          "timeslot__delta-value--positive": deltaValueSeconds > 0,
+          "timeslot__delta-value--negative": deltaValueSeconds <= 0,
         })}
+        title={elapsedTimeHumanReadable}
       >
-        {Duration.fromProps(chronometer.elapsedTime).seconds > 0
-          ? Duration.fromProps(chronometer.elapsedTime).toHumanReadableString()
-          : "--"}
+        {elapsedTimeSeconds > 0 ? elapsedTimeHumanReadable : "--"}
       </div>
       <Button
         primary

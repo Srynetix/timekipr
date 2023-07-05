@@ -79,6 +79,7 @@ export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
         </Button>
       </div>
       <div className="hash-setter__debug">
+        <b>Debug</b>
         <code>{JSON.stringify(loadHash(localHash))}</code>
       </div>
     </div>

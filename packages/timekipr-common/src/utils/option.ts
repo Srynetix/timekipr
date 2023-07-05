@@ -53,9 +53,9 @@ export class Option<T> {
     }
   }
 
-  orElse(fn: () => T): Option<T> {
+  orElse(fn: () => Option<T>): Option<T> {
     if (this._value == null) {
-      return new Option<T>(fn());
+      return fn();
     } else {
       return this;
     }
