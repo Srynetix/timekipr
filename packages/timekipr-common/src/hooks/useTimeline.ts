@@ -11,7 +11,7 @@ import { buildHash, loadHash } from "../utils/hash";
 import { buildDefaultTimelineDefinition } from "../domain/builders";
 import deepEqual from "deep-equal";
 
-// Definitions
+const buildStorageKey = (hash: string) => `last-timeline${hash}`;
 
 const loadDefinitionFromHash = (): Option<ChronometerTimelineDefinition> => {
   return Option.fromNullable(
@@ -39,27 +39,30 @@ const buildTimelineFromDefinition = (
   return mapper.fromDefinition(definition);
 };
 
-// Timeline data
-
 const saveTimelineToStorage = (
   hash: string,
   chronometerTimeline: ChronometerTimeline
 ) => {
   const mapper = new ChronometerTimelineMapper();
   const data = JSON.stringify(mapper.toStorage(chronometerTimeline));
-  const key = `last-timeline${hash}`;
+  const key = buildStorageKey(hash);
 
-  console.log("[useTimeline] saveTimelineToStorage", key, data);
-
+  console.debug("[useTimeline] saveTimelineToStorage", key, data);
   localStorage.setItem(key, data);
 };
 
+const removeTimelineFromStorage = (hash: string) => {
+  const key = buildStorageKey(hash);
+
+  console.debug("[useTimeline] removeTimelineFromStorage", key);
+  localStorage.removeItem(key);
+};
+
 const loadTimelineFromStorage = (hash: string): Option<ChronometerTimeline> => {
-  const key = `last-timeline${hash}`;
+  const key = buildStorageKey(hash);
   const mapper = new ChronometerTimelineMapper();
 
-  console.log("[useTimeline] loadTimelineFromStorage", key);
-
+  console.debug("[useTimeline] loadTimelineFromStorage", key);
   return Option.fromNullable(localStorage.getItem(key)).map((item) =>
     mapper.fromStorage(JSON.parse(item))
   );
@@ -105,7 +108,7 @@ export const useTimeline = () => {
   const setTimelineDefinitionWrapper = (
     value: ChronometerTimelineDefinition
   ) => {
-    console.log("[useTimeline] setTimelineDefinitionWrapper", value);
+    console.debug("[useTimeline] setTimelineDefinitionWrapper", value);
     window.location.hash = buildHash(value);
     setTimelineDefinition(value);
     recreateTimeline(value);
@@ -116,6 +119,7 @@ export const useTimeline = () => {
   );
 
   const resetTimeline = () => {
+    removeTimelineFromStorage(buildHash(timelineDefinition));
     recreateTimeline(timelineDefinition);
   };
 
@@ -125,7 +129,7 @@ export const useTimeline = () => {
   };
 
   const markCurrentChronometerAsDone = () => {
-    console.log(
+    console.debug(
       "[useTimeline] markCurrentChronometerAsDone",
       timelineObject.current.currentChronometer
     );
