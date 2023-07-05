@@ -1,25 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TimelineBuilder } from "./components/builders/TimelineBuilder";
 import { Timeline } from "./components/Timeline";
 
 import { HashSetter } from "./components/builders/HashSetter";
 import { AppHeader } from "./components/AppHeader";
-import { buildHash, loadHash } from "./utils/hash";
-import { ChronometerTimelineDefinition } from "./domain/mappers/ChronometerTimelineMapper";
-import { buildDefaultTimelineDefinition } from "./domain/builders";
 import { useTimeline } from "./hooks/useTimeline";
 
 function App() {
-  const [timelineDefinition, setTimelineDefinition] = useState(
-    () =>
-      loadHash<ChronometerTimelineDefinition>(window.location.hash.slice(1)) ??
-      buildDefaultTimelineDefinition()
-  );
   const [playing, setPlaying] = useState(false);
   const [chronometerView, setChronometerView] = useState(false);
 
-  const { commands: timelineActions, state: timelineState } =
-    useTimeline(timelineDefinition);
+  const { commands: timelineActions, state: timelineState } = useTimeline();
 
   const onPlay = () => {
     timelineActions.startTimeline();
@@ -51,34 +42,14 @@ function App() {
     timelineActions.markCurrentChronometerAsDone();
   };
 
-  useEffect(() => {
-    const handler = () => {
-      setTimelineDefinition(
-        loadHash<ChronometerTimelineDefinition>(
-          window.location.hash.slice(1)
-        ) ?? buildDefaultTimelineDefinition()
-      );
-    };
-
-    window.addEventListener("hashchange", handler);
-
-    return () => {
-      window.removeEventListener("hashchange", handler);
-    };
-  }, []);
-
-  useEffect(() => {
-    window.location.hash = buildHash(timelineDefinition);
-  }, [timelineDefinition]);
-
   return (
     <div className="app">
       {!chronometerView && <AppHeader animated={playing} />}
       {!chronometerView && (
         <>
           <TimelineBuilder
-            definition={timelineDefinition}
-            setDefinition={setTimelineDefinition}
+            definition={timelineState.timelineDefinition}
+            setDefinition={timelineActions.setTimelineDefinition}
             readonly={playing}
           />
           <HashSetter

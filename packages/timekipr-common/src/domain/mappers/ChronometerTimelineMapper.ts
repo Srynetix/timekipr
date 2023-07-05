@@ -47,6 +47,18 @@ export class ChronometerTimelineMapper {
     };
   }
 
+  fromDefinition(
+    definition: ChronometerTimelineDefinition
+  ): ChronometerTimeline {
+    return ChronometerTimeline.buildFromProps({
+      chronometers: definition.chronometers.map((c) =>
+        this.chronometerMapper.fromDefinition(c)
+      ),
+      currentChronometerIndex: 0,
+      started: false,
+    });
+  }
+
   fromStorage(dto: ChronometerTimelineStorageDTO): ChronometerTimeline {
     return ChronometerTimeline.buildFromProps({
       chronometers: dto.chronometers.map((c) =>

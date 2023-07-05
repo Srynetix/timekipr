@@ -27,6 +27,13 @@ export class ChronometerAlertMapper {
     };
   }
 
+  fromDefinition(definition: ChronometerAlertDefinition): ChronometerAlert {
+    return ChronometerAlert.buildFromProps({
+      remainingTime: Duration.fromProps(definition.remainingTime),
+      shown: false,
+    });
+  }
+
   fromStorage(dto: ChronometerAlertStorageDTO): ChronometerAlert {
     return ChronometerAlert.buildFromProps({
       remainingTime: Duration.fromSeconds(dto.remainingTimeSeconds),

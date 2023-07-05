@@ -30,4 +30,19 @@
     max-height: 52px;
     overflow: hidden;
   }
+
+  &__debug {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    width: 100%;
+    border-radius: 8px;
+    background-color: rgb(30, 30, 30);
+    padding: 0.25rem;
+
+    > code {
+      font-size: 75%;
+    }
+  }
 }
