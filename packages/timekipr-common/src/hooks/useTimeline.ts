@@ -11,9 +11,22 @@ import { buildHash, loadHash } from "../utils/hash";
 import { buildDefaultTimelineDefinition } from "../domain/builders";
 import deepEqual from "deep-equal";
 
-const buildStorageKey = (hash: string) => `last-timeline${hash}`;
+const buildTimelineStorageKey = (hash: string) => `last-timeline${hash}`;
+const buildDefinitionStorageKey = () => `last-definition`;
+
+const loadDefinitionHashFromStorage = (): string | null => {
+  return localStorage.getItem(buildDefinitionStorageKey());
+};
 
 const loadDefinitionFromHash = (): Option<ChronometerTimelineDefinition> => {
+  if (window.location.hash == "") {
+    const value = loadDefinitionHashFromStorage();
+    if (value != null) {
+      console.debug("[useTimeline] loadDefinitionHashFromStorage", value);
+      window.location.hash = value;
+    }
+  }
+
   return Option.fromNullable(
     loadHash<ChronometerTimelineDefinition>(window.location.hash.slice(1))
   );
@@ -45,27 +58,36 @@ const saveTimelineToStorage = (
 ) => {
   const mapper = new ChronometerTimelineMapper();
   const data = JSON.stringify(mapper.toStorage(chronometerTimeline));
-  const key = buildStorageKey(hash);
+  const key = buildTimelineStorageKey(hash);
 
   console.debug("[useTimeline] saveTimelineToStorage", key, data);
   localStorage.setItem(key, data);
 };
 
 const removeTimelineFromStorage = (hash: string) => {
-  const key = buildStorageKey(hash);
+  const key = buildTimelineStorageKey(hash);
 
   console.debug("[useTimeline] removeTimelineFromStorage", key);
   localStorage.removeItem(key);
 };
 
 const loadTimelineFromStorage = (hash: string): Option<ChronometerTimeline> => {
-  const key = buildStorageKey(hash);
+  const key = buildTimelineStorageKey(hash);
   const mapper = new ChronometerTimelineMapper();
 
   console.debug("[useTimeline] loadTimelineFromStorage", key);
   return Option.fromNullable(localStorage.getItem(key)).map((item) =>
     mapper.fromStorage(JSON.parse(item))
   );
+};
+
+const storeHashToStorage = (hash: string) => {
+  console.debug("[useTimeline] storeHashToStorage", hash);
+  localStorage.setItem(buildDefinitionStorageKey(), hash);
+};
+
+const removeHashFromStorage = () => {
+  localStorage.removeItem(buildDefinitionStorageKey());
 };
 
 const chronometerTimelineMapper = new ChronometerTimelineMapper();
@@ -109,9 +131,21 @@ export const useTimeline = () => {
     value: ChronometerTimelineDefinition
   ) => {
     console.debug("[useTimeline] setTimelineDefinitionWrapper", value);
+
     window.location.hash = buildHash(value);
+    storeHashToStorage(window.location.hash);
+
     setTimelineDefinition(value);
     recreateTimeline(value);
+  };
+
+  const resetTimelineDefinition = () => {
+    const defaultValue = buildDefaultTimelineDefinition();
+    setTimelineDefinition(defaultValue);
+    recreateTimeline(defaultValue);
+    removeHashFromStorage();
+
+    window.location.hash = buildHash(defaultValue);
   };
 
   const [timelineView, setTimelineView] = useState(() =>
@@ -164,6 +198,7 @@ export const useTimeline = () => {
       resetTimeline,
       markCurrentChronometerAsDone,
       setTimelineDefinition: setTimelineDefinitionWrapper,
+      resetTimelineDefinition,
     },
   };
 };

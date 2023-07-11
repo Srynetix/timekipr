@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Clipboard, Share2, Upload } from "react-feather";
+import { Clipboard, Share2, Trash, Upload } from "react-feather";
 import { CollapsibleTitle } from "../CollapsibleTitle";
 import { InlineHelp } from "../InlineHelp";
 import { Button } from "../Button";
@@ -8,10 +8,11 @@ import { loadHash } from "../../utils/hash";
 export interface Props {
   hash: string;
   onHashLoad: (value: string) => void;
+  onReset: () => void;
   readonly: boolean;
 }
 
-export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
+export const HashSetter = ({ hash, onHashLoad, onReset, readonly }: Props) => {
   const [localHash, setLocalHash] = useState(hash);
   const [collapsed, setCollapsed] = useState(true);
   const [previousHash, setPreviousHash] = useState(hash);
@@ -53,6 +54,14 @@ export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
           </Button>{" "}
           button to load the hash stored in the input box.
         </p>
+        <p>
+          Use the{" "}
+          <Button primary inline>
+            <Trash />
+            Reset configuration
+          </Button>{" "}
+          button to clear the timeline configuration.
+        </p>
       </InlineHelp>
       <input
         className="hash-setter__input"
@@ -76,6 +85,10 @@ export const HashSetter = ({ hash, onHashLoad, readonly }: Props) => {
         >
           <Upload />
           Load
+        </Button>
+        <Button primary disabled={readonly} onClick={() => onReset()}>
+          <Trash />
+          Reset configuration
         </Button>
       </div>
       <div className="hash-setter__debug">

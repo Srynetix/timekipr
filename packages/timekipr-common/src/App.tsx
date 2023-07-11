@@ -62,6 +62,9 @@ function App() {
                 timelineActions.setTimelineDefinition(data);
               }
             }}
+            onReset={() => {
+              timelineActions.resetTimelineDefinition();
+            }}
             readonly={playing}
           />
         </>
