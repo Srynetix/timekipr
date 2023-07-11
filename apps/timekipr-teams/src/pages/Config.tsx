@@ -6,8 +6,8 @@ export const ConfigPage = () => {
     try {
       pages.config.registerOnSaveHandler((handler) => {
         pages.config.setConfig({
-          contentUrl: "https://localhost:53000",
-          websiteUrl: "https://localhost:53000",
+          contentUrl: "https://srynetix.github.io/timekipr/teams/",
+          websiteUrl: "https://github.com/Srynetix/timekipr",
           entityId: "timekipr",
           suggestedDisplayName: "timekipr",
         });

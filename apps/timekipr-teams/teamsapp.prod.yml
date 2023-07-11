@@ -3,23 +3,19 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
+environmentFolderPath: ./env
+
 provision:
   # Creates a Teams app
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: timekipr-local
+      name: timekipr
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
-  - uses: script
-    with:
-      run:
-        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
-        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
@@ -30,25 +26,25 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
-      outputZipPath: ./appPackage/build/appPackage.local.zip
-      outputJsonPath: ./appPackage/build/manifest.local.json
+      outputZipPath: ./appPackage/build/appPackage.prod.zip
+      outputJsonPath: ./appPackage/build/manifest.prod.json
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
       # Relative path to this file. This is the path for built zip file.
-      appPackagePath: ./appPackage/build/appPackage.local.zip
+      appPackagePath: ./appPackage/build/appPackage.prod.zip
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.
   - uses: teamsApp/update
     with:
       # Relative path to this file. This is the path for built zip file.
-      appPackagePath: ./appPackage/build/appPackage.local.zip
+      appPackagePath: ./appPackage/build/appPackage.prod.zip
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365
     with:
       # Relative path to the build app package.
-      appPackagePath: ./appPackage/build/appPackage.local.zip
+      appPackagePath: ./appPackage/build/appPackage.prod.zip
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
