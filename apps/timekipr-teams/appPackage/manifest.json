@@ -59,7 +59,8 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "${{TAB_DOMAIN}}"
+        "${{TAB_DOMAIN}}",
+        "github.com"
     ],
     "showLoadingIndicator": false
 }

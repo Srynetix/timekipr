@@ -16,13 +16,15 @@
     "env-cmd": "^10.1.0",
     "@vitejs/plugin-react-swc": "^3.0.0",
     "@microsoft/teams-js": "^2.12.0",
+    "@microsoft/teamsfx-cli": "^2.0.1",
     "typescript": "^5.0.2"
   },
   "scripts": {
     "dev": "vite",
     "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
     "build": "tsc && vite build",
-    "build:teamsfx": "cross-env-shell TEAMS_FX_ENV=local \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\""
+    "build:teamsfx": "cross-env-shell TEAMS_FX_ENV=local \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
+    "teamsfx": "teamsfx"
   },
   "homepage": "."
 }
