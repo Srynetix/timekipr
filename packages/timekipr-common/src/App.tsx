@@ -5,6 +5,8 @@ import { Timeline } from "./components/Timeline";
 import { HashSetter } from "./components/builders/HashSetter";
 import { AppHeader } from "./components/AppHeader";
 import { useTimeline } from "./hooks/useTimeline";
+import { loadHash } from "./utils/hash";
+import { ChronometerTimelineDefinition } from "./domain/mappers/ChronometerTimelineMapper";
 
 function App() {
   const [playing, setPlaying] = useState(false);
@@ -54,7 +56,12 @@ function App() {
           />
           <HashSetter
             hash={window.location.hash.slice(1)}
-            onHashLoad={(h) => (window.location.hash = h)}
+            onHashLoad={(h) => {
+              const data = loadHash<ChronometerTimelineDefinition>(h);
+              if (data != null) {
+                timelineActions.setTimelineDefinition(data);
+              }
+            }}
             readonly={playing}
           />
         </>
